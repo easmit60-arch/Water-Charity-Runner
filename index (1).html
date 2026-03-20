@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Water Runner</title>
+  <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background: #0f4f82;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Nunito Sans', Arial, sans-serif;
+    color: #d8eeff;
+    padding: 12px;
+  }
+
+  .game-shell {
+    width: min(460px, 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    background: #0d3b66;
+    border: 1px solid #365a7b;
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  #topBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #d8eeff;
+    border-radius: 6px;
+    padding: 4px 8px;
+  }
+
+  #brand img {
+    width: 90px;
+    height: auto;
+  }
+
+  #brandText {
+    font-weight: 700;
+    font-size: 14px;
+    color: #ffd35f;
+  }
+
+  #boardWrap {
+    position: relative;
+    width: min(440px, 100%);
+    align-self: center;
+  }
+
+  #startBtn {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96px;
+    height: 96px;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #startBtn img {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+  }
+
+  #startBtn:hover {
+    transform: translateX(-50%) scale(1.04);
+  }
+
+  #startBtn:focus-visible {
+    outline: 2px solid #c9ecff;
+    border-radius: 50%;
+  }
+
+  .top-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: 12px;
+    padding: 6px 8px;
+    border: 1px solid #365a7b;
+    border-radius: 6px;
+    background: #d8eeff;
+  }
+
+  .top-nav a {
+    color: #0d3b66;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .top-nav a:hover {
+    text-decoration: underline;
+  }
+
+  #hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  #score {
+    font-weight: 700;
+  }
+
+  #timer {
+    font-weight: 700;
+    color: #d9f1ff;
+    font-size: 13px;
+  }
+
+  #tinInfo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+  }
+
+  #storedWater {
+    min-width: 104px;
+    font-weight: 700;
+    color: #c9ecff;
+  }
+
+  #tinRow {
+    display: flex;
+    gap: 4px;
+  }
+
+  .tin {
+    width: 13px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid #8ea4b8;
+    background: #d7dfe7;
+  }
+
+  .tin.filled {
+    background: linear-gradient(to top, #2f9bff 0 70%, #d7dfe7 70%);
+  }
+
+  #damPanel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #damButtons {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #buildDam {
+    border: 1px solid #4b7ea8;
+    background: #12365a;
+    color: #d8eeff;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  #storeWater {
+    border: 1px solid #4b7ea8;
+    background: #12365a;
+    color: #d8eeff;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  #buildDam:disabled,
+  #storeWater:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #controlHint {
+    font-size: 12px;
+    color: #a8c4dd;
+  }
+
+  canvas {
+    border: 1px solid #7ab6e8;
+    display: block;
+    width: 100%;
+    max-width: 440px;
+    align-self: center;
+    background: #0b4a78;
+  }
+
+  #status {
+    margin: 0;
+    min-height: 20px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  #milestone {
+    margin: 0;
+    min-height: 20px;
+    font-size: 13px;
+    text-align: center;
+    color: #ffd25e;
+  }
+
+  #playAgainBtn {
+    border: 1px solid #8fc7ef;
+    background: #1f6aa2;
+    color: #f2fbff;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    align-self: center;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 500px) {
+    #brand img {
+      width: 74px;
+    }
+
+    #brandText {
+      font-size: 12px;
+    }
+
+    #topBar {
+      flex-wrap: wrap;
+    }
+  }
+  </style>
+</head>
+<body>
+<div class="game-shell">
+  <nav class="top-nav" aria-label="Main navigation">
+    <a href="index.html">Game</a>
+    <a href="README.md">Prompt Guide (README)</a>
+  </nav>
+  <div id="topBar">
+    <div id="brand">
+      <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer" aria-label="Donate to charity: water">
+        <img src="img/cw_logo_horizontal.png" alt="charity: water logo">
+      </a>
+      <a id="brandText" href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer">Water Runner</a>
+    </div>
+  </div>
+  <div id="hud">
+    <span id="score">Score: 0</span>
+    <span id="timer">Flourishing: --</span>
+    <div id="tinInfo">
+      <span id="storedWater">Stored: 0/100</span>
+      <div id="tinRow">
+        <span class="tin" id="tin1"></span>
+        <span class="tin" id="tin2"></span>
+        <span class="tin" id="tin3"></span>
+      </div>
+    </div>
+  </div>
+  <div id="damPanel">
+    <div id="damButtons">
+      <button id="buildDam" type="button" disabled>Build Dam (locked)</button>
+      <button id="storeWater" type="button" disabled>Store Water: S</button>
+    </div>
+    <span id="controlHint">Move: ← → ↑ ↓ | Build Dam: D | Store Water: S</span>
+  </div>
+  <div id="boardWrap">
+    <canvas width="440" height="440" id="game"></canvas>
+    <button id="startBtn" type="button" aria-label="Start game">
+      <img src="img/water-can.png" alt="Start Water Runner">
+    </button>
+  </div>
+  <p id="status"></p>
+  <p id="milestone"></p>
+  <button id="playAgainBtn" type="button" class="hidden">Play Again</button>
+</div>
+<script>
+const canvas = document.getElementById('game');
+const context = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const timerEl = document.querySelector('#timer');
+const storedWaterEl = document.getElementById('storedWater');
+const statusEl = document.getElementById('status');
+const milestoneEl = document.getElementById('milestone');
+const startBtn = document.getElementById('startBtn');
+const buildDamBtn = document.getElementById('buildDam');
+const storeWaterBtn = document.getElementById('storeWater');
+const playAgainBtn = document.getElementById('playAgainBtn');
+const tinEls = [
+  document.getElementById('tin1'),
+  document.getElementById('tin2'),
+  document.getElementById('tin3')
+];
+
+const game = {
+  state: 'start',
+  frame: 0,
+  score: 0,
+  rainIntensity: 0.52,
+  postDamRainIntensity: 0.093,
+  tinsRequired: 3,
+  damPromptScore: 25,
+  waterStorageMax: 100,
+  floodScore: 135,
+  flourishWinSeconds: 30,
+  clearPromptScore: 30,
+  drainIntervalMs: 1000,
+  drainAmountPerTick: 2,
+  storedWater: 0,
+  tinsFilled: 0,
+  damBuilt: false,
+  reachedMaxStorage: false,
+  damPromptShown: false,
+  lastPenaltyTickMs: 0,
+  flourishStartMs: 0,
+  confetti: [],
+  keys: { left: false, right: false, up: false, down: false },
+  river: {
+    x: canvas.width / 2,
+    y: canvas.height - 26,
+    speed: 1.7,
+    direction: 1,
+    segments: [],
+    maxSegments: 12
+  },
+  drops: []
+};
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
+const KEY_LEFT = 'ArrowLeft';
+const KEY_RIGHT = 'ArrowRight';
+const KEY_UP = 'ArrowUp';
+const KEY_DOWN = 'ArrowDown';
+
+function setStatus(message) {
+  statusEl.textContent = message;
+}
+
+function setSuggestion(message) {
+  milestoneEl.textContent = message;
+}
+
+function resetRiver() {
+  game.river.x = canvas.width / 2;
+  game.river.y = canvas.height - 26;
+  game.river.direction = 1;
+  game.river.segments = [];
+  game.river.maxSegments = 12;
+  for (let i = 0; i < game.river.maxSegments; i++) {
+    game.river.segments.push({ x: game.river.x, y: game.river.y });
+  }
+}
+
+function resetGame() {
+  game.score = 0;
+  game.rainIntensity = 0.52;
+  game.storedWater = 0;
+  game.tinsFilled = 0;
+  game.frame = 0;
+  game.drops = [];
+  game.damBuilt = false;
+  game.reachedMaxStorage = false;
+  game.damPromptShown = false;
+  game.lastPenaltyTickMs = 0;
+  game.flourishStartMs = 0;
+  game.confetti = [];
+  game.keys.left = false;
+  game.keys.right = false;
+  game.keys.up = false;
+  game.keys.down = false;
+  startBtn.classList.remove('hidden');
+  startBtn.disabled = false;
+  buildDamBtn.disabled = true;
+  storeWaterBtn.disabled = true;
+  buildDamBtn.textContent = 'Build Dam (locked)';
+  playAgainBtn.classList.add('hidden');
+  setSuggestion('');
+  resetRiver();
+  updateHud();
+  updateTimerHud(performance.now());
+}
+
+function startGame() {
+  resetGame();
+  game.state = 'playing';
+  startBtn.classList.add('hidden');
+  startBtn.disabled = true;
+  setStatus('Move with arrows, collect rain, and build a dam to route water to the village.');
+}
+
+function updateHud() {
+  scoreEl.textContent = 'Score: ' + game.score + ' / ' + game.floodScore;
+  storeWaterBtn.disabled = game.state !== 'playing' || game.score <= 0;
+
+  const perTin = game.waterStorageMax / tinEls.length;
+  game.tinsFilled = Math.min(tinEls.length, Math.floor(game.storedWater / perTin));
+  storedWaterEl.textContent = 'Stored: ' + game.storedWater + '/' + game.waterStorageMax;
+
+  for (let i = 0; i < tinEls.length; i++) {
+    const fillRatio = Math.max(0, Math.min(1, (game.storedWater - i * perTin) / perTin));
+    const fillPercent = Math.round(fillRatio * 100);
+    tinEls[i].style.background = 'linear-gradient(to top, #2f9bff 0 ' + fillPercent + '%, #d7dfe7 ' + fillPercent + '% 100%)';
+  }
+
+  if (game.damBuilt) {
+    buildDamBtn.textContent = 'Dam Built ✓';
+    buildDamBtn.disabled = true;
+    return;
+  }
+
+  if (game.score >= game.damPromptScore) {
+    if (game.storedWater >= game.damPromptScore && game.state === 'playing') {
+      buildDamBtn.textContent = 'Build Dam (D)';
+      buildDamBtn.disabled = false;
+    } else {
+      buildDamBtn.textContent = 'Store 25 water first';
+      buildDamBtn.disabled = true;
+    }
+  } else {
+    buildDamBtn.textContent = 'Build Dam (locked)';
+    buildDamBtn.disabled = true;
+  }
+}
+
+function updateTimerHud(nowMs) {
+  if (game.state === 'start') {
+    timerEl.textContent = 'Flourishing: --';
+    return;
+  }
+
+  if (game.state === 'playing' && !game.damBuilt) {
+    timerEl.textContent = 'Flourishing: Build Dam';
+    return;
+  }
+
+  if (game.state === 'playing' && game.damBuilt) {
+    const elapsedSeconds = (nowMs - game.flourishStartMs) / 1000;
+    const remainingSeconds = Math.max(0, Math.ceil(game.flourishWinSeconds - elapsedSeconds));
+    timerEl.textContent = 'Flourishing: ' + remainingSeconds + 's';
+    return;
+  }
+
+  if (game.state === 'won') {
+    timerEl.textContent = 'Flourishing: Complete';
+    return;
+  }
+
+  if (game.state === 'lost') {
+    timerEl.textContent = 'Flourishing: Failed';
+  }
+}
+
+function maybeShowDamSuggestion() {
+  if (game.state !== 'playing' || game.damBuilt) {
+    return;
+  }
+
+  if (game.score >= game.damPromptScore && game.score < game.clearPromptScore && !game.damPromptShown) {
+    game.damPromptShown = true;
+    setStatus('Build a dam now: route water to the dry village.');
+    setSuggestion('Store water, build the dam, keep score under 135, and reach 100 stored water.');
+  }
+
+  if (game.score >= game.clearPromptScore && !game.damBuilt) {
+    setSuggestion('');
+  }
+}
+
+function checkFloodLoss() {
+  // Loss rule: if score goes above floodScore while playing, the village floods.
+  if (game.state !== 'playing') {
+    return;
+  }
+
+  if (game.score <= game.floodScore) {
+    return;
+  }
+
+  if (!game.damBuilt) {
+    loseGame('You lost: no dam was built before score ' + game.floodScore + '.');
+  } else {
+    loseGame('You lost: water rose above ' + game.floodScore + '.');
+  }
+}
+
+function loseGame(reason) {
+  // Loss screen state: show flood messaging and Play Again button.
+  game.state = 'lost';
+  buildDamBtn.disabled = true;
+  storeWaterBtn.disabled = true;
+  buildDamBtn.textContent = 'Flooded';
+  setStatus(reason);
+  setSuggestion('Deep-blue flood took over. Press Play Again.');
+  startBtn.disabled = true;
+  playAgainBtn.classList.remove('hidden');
+}
+
+function winGame() {
+  // Win screen state: show celebration messaging, Play Again, and confetti.
+  game.state = 'won';
+  buildDamBtn.disabled = true;
+  storeWaterBtn.disabled = true;
+  buildDamBtn.textContent = 'Village Flourishing ✓';
+  setStatus('Congratulations! Village flourished for 30 seconds under 135 with full storage.');
+  setSuggestion('You win! Press Play Again.');
+  startBtn.disabled = true;
+  playAgainBtn.classList.remove('hidden');
+  launchConfetti();
+}
+
+function launchConfetti() {
+  game.confetti = [];
+  const pieces = 140;
+  const colors = ['#ffd35f', '#35c7ff', '#ffffff', '#7ef3a1', '#ff8db3'];
+
+  for (let i = 0; i < pieces; i++) {
+    game.confetti.push({
+      x: Math.random() * canvas.width,
+      y: -Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 3.8,
+      vy: 1.6 + Math.random() * 3.2,
+      size: 3 + Math.random() * 4,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+}
+
+function updateConfetti() {
+  for (let i = 0; i < game.confetti.length; i++) {
+    const piece = game.confetti[i];
+    piece.x += piece.vx;
+    piece.y += piece.vy;
+
+    if (piece.y > canvas.height + 12) {
+      piece.y = -8;
+      piece.x = Math.random() * canvas.width;
+    }
+
+    if (piece.x < -10) {
+      piece.x = canvas.width + 10;
+    } else if (piece.x > canvas.width + 10) {
+      piece.x = -10;
+    }
+  }
+}
+
+function drawConfetti() {
+  for (let i = 0; i < game.confetti.length; i++) {
+    const piece = game.confetti[i];
+    context.fillStyle = piece.color;
+    context.fillRect(piece.x, piece.y, piece.size, piece.size);
+  }
+}
+
+function updateStoredWaterDrain(nowMs) {
+  // After dam is built, stored water is drained on a fixed timer.
+  if (game.state !== 'playing' || !game.damBuilt) {
+    return;
+  }
+
+  while (nowMs - game.lastPenaltyTickMs >= game.drainIntervalMs) {
+    game.lastPenaltyTickMs += game.drainIntervalMs;
+    game.storedWater = Math.max(0, game.storedWater - game.drainAmountPerTick);
+    updateHud();
+  }
+}
+
+function updateFlourishWin(nowMs) {
+  // Win rule check:
+  // 1) Dam is built,
+  // 2) Flourish timer reaches 30 seconds,
+  // 3) Score stays under floodScore,
+  // 4) Player reached max storage at least once.
+  if (game.state !== 'playing' || !game.damBuilt) {
+    return;
+  }
+
+  if (!game.flourishStartMs) {
+    game.flourishStartMs = nowMs;
+  }
+
+  const elapsedSeconds = (nowMs - game.flourishStartMs) / 1000;
+  const remainingSeconds = Math.max(0, Math.ceil(game.flourishWinSeconds - elapsedSeconds));
+
+  if (game.score < game.floodScore) {
+    const storageGoal = game.reachedMaxStorage ? 'storage goal met' : ('store ' + (game.waterStorageMax - game.storedWater) + ' more water');
+    setSuggestion('Flourish ' + remainingSeconds + 's left | ' + storageGoal + ' | keep score under ' + game.floodScore + '.');
+  }
+
+  if (elapsedSeconds >= game.flourishWinSeconds) {
+    if (game.score < game.floodScore && game.reachedMaxStorage) {
+      winGame();
+      return;
+    }
+
+    if (game.score >= game.floodScore) {
+      loseGame('You lost: water rose above ' + game.floodScore + '.');
+      return;
+    }
+
+    loseGame('You lost: flourish timer reached 0s before full storage was reached.');
+  }
+}
+
+function buildDam() {
+  // Building the dam starts the flourish phase and the storage drain timer.
+  if (game.state !== 'playing' || game.damBuilt) {
+    return;
+  }
+  if (game.score < game.damPromptScore) {
+    setStatus('Dam unlocks at score ' + game.damPromptScore + '.');
+    return;
+  }
+
+  if (game.storedWater < game.damPromptScore) {
+    setStatus('Store at least ' + game.damPromptScore + ' water in tins first.');
+    return;
+  }
+
+  game.damBuilt = true;
+  game.flourishStartMs = performance.now();
+  game.lastPenaltyTickMs = game.flourishStartMs;
+  game.rainIntensity = game.postDamRainIntensity;
+  game.river.direction = -1;
+  updateHud();
+  setStatus('Dam built! Town now uses 5 stored water per second.');
+  setSuggestion('Keep village flourishing for 30 seconds, stay under ' + game.floodScore + ', and reach 100 stored water.');
+}
+
+function storeWater() {
+  if (game.state !== 'playing') {
+    return;
+  }
+
+  if (game.storedWater >= game.waterStorageMax) {
+    setStatus('Storage is already full. Build the dam and protect the village.');
+    return;
+  }
+
+  if (game.score <= 0) {
+    setStatus('No score to store yet. Collect rain first.');
+    return;
+  }
+
+  const availableStorage = game.waterStorageMax - game.storedWater;
+  const pointsToStore = Math.min(game.score, availableStorage);
+
+  game.storedWater = Math.min(game.waterStorageMax, game.storedWater + pointsToStore);
+  game.score = Math.max(0, game.score - pointsToStore);
+  if (game.storedWater >= game.waterStorageMax) {
+    game.reachedMaxStorage = true;
+  }
+
+  updateHud();
+  setStatus('Stored ' + pointsToStore + ' water from score.');
+}
+
+function spawnDrop() {
+  game.drops.push({
+    x: randomInt(8, canvas.width - 8),
+    y: -12,
+    size: randomInt(5, 13),
+    vx: (Math.random() * 5.4) - 2.7,
+    vy: 3.3 + Math.random() * 4.2,
+    phase: Math.random() * Math.PI * 2
+  });
+}
+
+function updateRiver() {
+  if (game.damBuilt) {
+    const villageTargetX = 108;
+    const villageTargetY = 92;
+    const guidePull = 0.45;
+
+    if (game.keys.left && !game.keys.right) {
+      game.river.direction = -1;
+    } else if (game.keys.right && !game.keys.left) {
+      game.river.direction = 1;
+    }
+
+    if (game.keys.up && !game.keys.down) {
+      game.river.y -= game.river.speed;
+    } else if (game.keys.down && !game.keys.up) {
+      game.river.y += game.river.speed;
+    }
+
+    game.river.x += game.river.direction * game.river.speed;
+
+    const driftX = (villageTargetX - game.river.x) * 0.04;
+    const driftY = (villageTargetY - game.river.y) * 0.04;
+    game.river.x += Math.max(-guidePull, Math.min(guidePull, driftX));
+    game.river.y += Math.max(-guidePull, Math.min(guidePull, driftY));
+  } else {
+    if (game.keys.left && !game.keys.right) {
+      game.river.direction = -1;
+    } else if (game.keys.right && !game.keys.left) {
+      game.river.direction = 1;
+    }
+
+    if (game.keys.up && !game.keys.down) {
+      game.river.y -= game.river.speed;
+    } else if (game.keys.down && !game.keys.up) {
+      game.river.y += game.river.speed;
+    }
+
+    game.river.x += game.river.direction * game.river.speed;
+  }
+
+  if (game.river.x < 10) {
+    game.river.x = 10;
+    game.river.direction = 1;
+  } else if (game.river.x > canvas.width - 10) {
+    game.river.x = canvas.width - 10;
+    game.river.direction = -1;
+  }
+
+  const minRiverY = game.damBuilt ? 24 : canvas.height * 0.62;
+  const maxRiverY = canvas.height - 20;
+  if (game.river.y < minRiverY) {
+    game.river.y = minRiverY;
+  } else if (game.river.y > maxRiverY) {
+    game.river.y = maxRiverY;
+  }
+
+  game.river.segments.unshift({ x: game.river.x, y: game.river.y });
+  if (game.river.segments.length > game.river.maxSegments) {
+    game.river.segments.pop();
+  }
+}
+
+function collectDrop(index) {
+  // Collection rule: each drop gives +1 score and +1 stored water.
+  // Once storage reaches max, reachedMaxStorage is locked in for win checking.
+  game.drops.splice(index, 1);
+  game.score += 1;
+  game.storedWater = Math.min(game.waterStorageMax, game.storedWater + 1);
+  if (game.storedWater >= game.waterStorageMax) {
+    game.reachedMaxStorage = true;
+  }
+  game.river.maxSegments = Math.min(190, game.river.maxSegments + 1);
+  updateHud();
+  maybeShowDamSuggestion();
+}
+
+function updateDrops() {
+  for (let i = game.drops.length - 1; i >= 0; i--) {
+    const drop = game.drops[i];
+    drop.phase += 0.34;
+    drop.vx += (Math.random() - 0.5) * 0.22;
+    drop.vx = Math.max(-3.2, Math.min(3.2, drop.vx));
+    drop.x += drop.vx + Math.sin(drop.phase) * 1.15;
+    drop.y += drop.vy;
+
+    if (drop.y > canvas.height + 18 || drop.x < -24 || drop.x > canvas.width + 24) {
+      game.drops.splice(i, 1);
+      continue;
+    }
+
+    const nearHead = Math.abs(drop.x - game.river.x) < 22 && Math.abs(drop.y - game.river.y) < 16;
+    if (nearHead) {
+      collectDrop(i);
+      continue;
+    }
+
+    const segmentLimit = Math.min(game.river.segments.length, 18);
+    for (let j = 0; j < segmentLimit; j++) {
+      const segment = game.river.segments[j];
+      if (Math.abs(drop.x - segment.x) < 10 && Math.abs(drop.y - segment.y) < 10) {
+        collectDrop(i);
+        break;
+      }
+    }
+  }
+}
+
+function drawVillage() {
+  const villageX = 10;
+  const villageY = 10;
+  const villageW = 132;
+  const villageH = 92;
+
+  context.fillStyle = game.damBuilt ? '#9adf83' : '#ccb086';
+  context.fillRect(villageX, villageY + 26, villageW, villageH - 26);
+
+  context.fillStyle = game.damBuilt ? '#ffdf8d' : '#c8ae81';
+  context.beginPath();
+  context.arc(villageX + villageW - 20, villageY + 16, 10, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = game.damBuilt ? '#5b9f4f' : '#7d6b54';
+  context.fillRect(villageX + 12, villageY + 38, 18, 30);
+  context.fillRect(villageX + 96, villageY + 40, 18, 28);
+
+  if (!game.damBuilt) {
+    context.strokeStyle = '#8d6e50';
+    context.beginPath();
+    context.moveTo(villageX + 20, villageY + 80);
+    context.lineTo(villageX + 36, villageY + 74);
+    context.lineTo(villageX + 52, villageY + 82);
+    context.lineTo(villageX + 68, villageY + 76);
+    context.lineTo(villageX + 84, villageY + 83);
+    context.stroke();
+  }
+
+  context.fillStyle = '#9d744a';
+  context.fillRect(villageX + 42, villageY + 44, 22, 22);
+  context.fillRect(villageX + 72, villageY + 44, 22, 22);
+
+  context.fillStyle = game.damBuilt ? '#2f9bff' : '#8fa7b9';
+  context.fillRect(villageX + 28, villageY + 72, 74, 9);
+
+  if (game.damBuilt) {
+    context.beginPath();
+    context.moveTo(112, 82);
+    context.quadraticCurveTo(160, 168, game.river.x, game.river.y - 6);
+    context.lineWidth = 6;
+    context.strokeStyle = '#51b9ff';
+    context.stroke();
+    context.lineWidth = 1;
+  }
+}
+
+function drawDrops() {
+  for (let i = 0; i < game.drops.length; i++) {
+    const drop = game.drops[i];
+    context.fillStyle = '#35c7ff';
+    context.beginPath();
+    context.ellipse(drop.x, drop.y, drop.size * 0.42, drop.size * 0.66, 0, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function drawRiver() {
+  if (game.river.segments.length > 1) {
+    context.beginPath();
+    context.moveTo(game.river.segments[0].x, game.river.segments[0].y);
+    for (let i = 1; i < game.river.segments.length; i++) {
+      context.lineTo(game.river.segments[i].x, game.river.segments[i].y);
+    }
+    context.strokeStyle = '#2f9bff';
+    context.lineWidth = 8;
+    context.lineCap = 'round';
+    context.stroke();
+    context.lineWidth = 1;
+  }
+
+  for (let i = 0; i < game.river.segments.length; i += 4) {
+    const seg = game.river.segments[i];
+    context.fillStyle = i === 0 ? '#9be0ff' : '#2f9bff';
+    context.beginPath();
+    context.arc(seg.x, seg.y, i === 0 ? 6 : 4, 0, Math.PI * 2);
+    context.fill();
+  }
+}
+
+function drawBoard() {
+  context.fillStyle = '#0a4a7a';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = 'rgba(255,255,255,0.04)';
+  for (let storm = 0; storm < 20; storm++) {
+    const px = (storm * 24 + game.frame * 2) % (canvas.width + 24);
+    context.fillRect(px, 0, 2, 18);
+  }
+
+  drawVillage();
+  drawDrops();
+  drawRiver();
+
+  if (!game.damBuilt && game.score >= game.damPromptScore) {
+    context.fillStyle = '#9e7a52';
+    for (let block = 0; block < 4; block++) {
+      context.fillRect(122 + block * 13, 82, 10, 8);
+    }
+  }
+}
+
+function drawOverlay(text) {
+  context.fillStyle = 'rgba(13, 72, 118, 0.52)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#ffffff';
+  context.font = 'bold 22px Arial';
+  context.textAlign = 'center';
+  context.fillText(text, canvas.width / 2, canvas.height / 2 - 8);
+  context.font = '14px Arial';
+  context.fillText('Dry village is in the top-left. Click Start to Begin.', canvas.width / 2, canvas.height / 2 + 20);
+}
+
+function drawFloodLossOverlay() {
+  context.fillStyle = 'rgba(7, 76, 140, 0.95)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = 'rgba(27, 118, 196, 0.45)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  context.strokeStyle = 'rgba(200, 238, 255, 0.9)';
+  for (let i = 0; i < 20; i++) {
+    const bubbleX = (i * 31 + game.frame * 1.5) % (canvas.width + 20);
+    const bubbleY = canvas.height - ((game.frame * 1.1 + i * 29) % 260);
+    const radius = 3 + (i % 4);
+    context.beginPath();
+    context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
+    context.stroke();
+  }
+
+  context.fillStyle = '#ffffff';
+  context.textAlign = 'center';
+  context.font = 'bold 22px Arial';
+  context.fillText('Flooded Village - You Lost', canvas.width / 2, canvas.height / 2 - 10);
+  context.font = '14px Arial';
+  context.fillText('Flood warning crossed over ' + game.floodScore + ' points.', canvas.width / 2, canvas.height / 2 + 16);
+  context.fillText('The town is underwater. Press Play Again.', canvas.width / 2, canvas.height / 2 + 36);
+}
+
+function drawWinOverlay() {
+  context.fillStyle = 'rgba(15, 110, 81, 0.68)';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = '#ffffff';
+  context.textAlign = 'center';
+  context.font = 'bold 24px Arial';
+  context.fillText('Congratulations!', canvas.width / 2, canvas.height / 2 - 16);
+  context.font = 'bold 18px Arial';
+  context.fillText('Village Flourishing Achieved', canvas.width / 2, canvas.height / 2 + 10);
+  context.font = '14px Arial';
+  context.fillText('You protected the town for 30 seconds with full water storage.', canvas.width / 2, canvas.height / 2 + 34);
+}
+
+function loop() {
+  requestAnimationFrame(loop);
+  game.frame++;
+  const nowMs = performance.now();
+  updateTimerHud(nowMs);
+
+  if (game.state === 'start') {
+    drawBoard();
+    drawOverlay('Water Runner');
+    return;
+  }
+
+  if (game.state === 'lost') {
+    drawBoard();
+    drawFloodLossOverlay();
+    return;
+  }
+
+  if (game.state === 'won') {
+    drawBoard();
+    updateConfetti();
+    drawConfetti();
+    drawWinOverlay();
+    return;
+  }
+
+  updateRiver();
+
+  if (Math.random() < game.rainIntensity) {
+    spawnDrop();
+  }
+
+  updateDrops();
+  maybeShowDamSuggestion();
+  updateStoredWaterDrain(nowMs);
+  updateFlourishWin(nowMs);
+  checkFloodLoss();
+  drawBoard();
+}
+
+document.addEventListener('keydown', function(e) {
+  if (game.state !== 'playing') {
+    return;
+  }
+
+  if (e.key === KEY_LEFT) {
+    e.preventDefault();
+    game.keys.left = true;
+  }
+
+  if (e.key === KEY_RIGHT) {
+    e.preventDefault();
+    game.keys.right = true;
+  }
+
+  if (e.key === KEY_UP) {
+    e.preventDefault();
+    game.keys.up = true;
+  }
+
+  if (e.key === KEY_DOWN) {
+    e.preventDefault();
+    game.keys.down = true;
+  }
+
+  if (e.key === 'd' || e.key === 'D') {
+    e.preventDefault();
+    buildDam();
+  }
+
+  if (e.key === 's' || e.key === 'S') {
+    e.preventDefault();
+    storeWater();
+  }
+});
+
+document.addEventListener('keyup', function(e) {
+  if (e.key === KEY_LEFT) {
+    game.keys.left = false;
+  }
+  if (e.key === KEY_RIGHT) {
+    game.keys.right = false;
+  }
+  if (e.key === KEY_UP) {
+    game.keys.up = false;
+  }
+  if (e.key === KEY_DOWN) {
+    game.keys.down = false;
+  }
+});
+
+startBtn.addEventListener('click', function() {
+  startGame();
+});
+
+buildDamBtn.addEventListener('click', function() {
+  buildDam();
+});
+
+storeWaterBtn.addEventListener('click', function() {
+  storeWater();
+});
+
+playAgainBtn.addEventListener('click', function() {
+  startGame();
+});
+
+resetGame();
+updateHud();
+setStatus('Click Start to launch the river.');
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
