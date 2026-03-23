@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Water Runner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&display=swap" rel="stylesheet">
   <style>
   html, body {
     height: 100%;
@@ -15,7 +18,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-family: 'Nunito Sans', Arial, sans-serif;
+    font-family: 'Avenir Next', Avenir, 'Montserrat', 'Segoe UI', sans-serif;
     color: #d8eeff;
     padding: 12px;
   }
@@ -172,6 +175,33 @@
     gap: 8px;
   }
 
+  #difficultyPanel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #365a7b;
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: #12365a;
+    color: #e5f5ff;
+    font-size: 12px;
+  }
+
+  #difficultySelect {
+    border: 1px solid #8fc7ef;
+    background: #d8eeff;
+    color: #0d3b66;
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-weight: 700;
+  }
+
+  #difficultyHint {
+    color: #b8d7ef;
+    font-size: 12px;
+  }
+
   #damButtons {
     display: flex;
     align-items: center;
@@ -245,6 +275,54 @@
     align-self: center;
   }
 
+  #impactPanel {
+    border: 1px solid #365a7b;
+    border-radius: 6px;
+    background: #0f3f6b;
+    padding: 8px;
+  }
+
+  #impactTitle {
+    margin: 0 0 6px;
+    color: #ffd35f;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  #impactFeed {
+    margin: 0;
+    padding-left: 18px;
+    min-height: 54px;
+    font-size: 12px;
+    color: #d8eeff;
+  }
+
+  #impactFeed li {
+    margin: 2px 0;
+  }
+
+  #cwFooter {
+    border-top: 1px solid #365a7b;
+    margin-top: 4px;
+    padding-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #b9d6ec;
+  }
+
+  #cwFooter a {
+    color: #ffd35f;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  #cwFooter a:hover {
+    text-decoration: underline;
+  }
+
   .hidden {
     display: none !important;
   }
@@ -297,6 +375,15 @@
     </div>
     <span id="controlHint">Move: ← → ↑ ↓ | Build Dam: D | Store Water: S</span>
   </div>
+  <div id="difficultyPanel">
+    <label for="difficultySelect">Difficulty</label>
+    <select id="difficultySelect" aria-label="Select difficulty">
+      <option value="easy">Easy</option>
+      <option value="normal" selected>Normal</option>
+      <option value="hard">Hard</option>
+    </select>
+    <span id="difficultyHint">Applies on Start/Play Again</span>
+  </div>
   <div id="boardWrap">
     <canvas width="440" height="440" id="game"></canvas>
     <button id="startBtn" type="button" aria-label="Start game">
@@ -305,7 +392,16 @@
   </div>
   <p id="status"></p>
   <p id="milestone"></p>
+  <div id="impactPanel">
+    <p id="impactTitle">Mission Feed</p>
+    <ul id="impactFeed"></ul>
+  </div>
   <button id="playAgainBtn" type="button" class="hidden">Play Again</button>
+  <footer id="cwFooter">
+    <span>Learn more and support clean water projects:</span>
+    <a href="https://www.charitywater.org" target="_blank" rel="noopener noreferrer">charity: water Website</a>
+    <a href="https://www.charitywater.org/donate" target="_blank" rel="noopener noreferrer">Donate</a>
+  </footer>
 </div>
 <script>
 const canvas = document.getElementById('game');
@@ -319,6 +415,8 @@ const startBtn = document.getElementById('startBtn');
 const buildDamBtn = document.getElementById('buildDam');
 const storeWaterBtn = document.getElementById('storeWater');
 const playAgainBtn = document.getElementById('playAgainBtn');
+const difficultySelect = document.getElementById('difficultySelect');
+const impactFeedEl = document.getElementById('impactFeed');
 const tinEls = [
   document.getElementById('tin1'),
   document.getElementById('tin2'),
@@ -359,6 +457,66 @@ const game = {
   drops: []
 };
 
+const DIFFICULTIES = {
+  easy: {
+    floodScore: 150,
+    flourishWinSeconds: 35,
+    rainIntensity: 0.44,
+    postDamRainIntensity: 0.075,
+    waterStorageMax: 90,
+    damPromptScore: 20,
+    drainAmountPerTick: 1
+  },
+  normal: {
+    floodScore: 135,
+    flourishWinSeconds: 30,
+    rainIntensity: 0.52,
+    postDamRainIntensity: 0.093,
+    waterStorageMax: 100,
+    damPromptScore: 25,
+    drainAmountPerTick: 2
+  },
+  hard: {
+    floodScore: 120,
+    flourishWinSeconds: 24,
+    rainIntensity: 0.61,
+    postDamRainIntensity: 0.125,
+    waterStorageMax: 110,
+    damPromptScore: 30,
+    drainAmountPerTick: 3
+  }
+};
+
+function getDifficultyName() {
+  return (difficultySelect && difficultySelect.value) ? difficultySelect.value : 'normal';
+}
+
+function applyDifficulty() {
+  const level = getDifficultyName();
+  const config = DIFFICULTIES[level] || DIFFICULTIES.normal;
+  game.floodScore = config.floodScore;
+  game.flourishWinSeconds = config.flourishWinSeconds;
+  game.rainIntensity = config.rainIntensity;
+  game.postDamRainIntensity = config.postDamRainIntensity;
+  game.waterStorageMax = config.waterStorageMax;
+  game.damPromptScore = config.damPromptScore;
+  game.drainAmountPerTick = config.drainAmountPerTick;
+}
+
+function clearImpactFeed() {
+  impactFeedEl.innerHTML = '';
+}
+
+function addImpactEvent(text) {
+  const item = document.createElement('li');
+  item.textContent = text;
+  impactFeedEl.prepend(item);
+
+  while (impactFeedEl.children.length > 6) {
+    impactFeedEl.removeChild(impactFeedEl.lastElementChild);
+  }
+}
+
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
@@ -388,8 +546,9 @@ function resetRiver() {
 }
 
 function resetGame() {
+  applyDifficulty();
   game.score = 0;
-  game.rainIntensity = 0.52;
+  game.rainIntensity = DIFFICULTIES[getDifficultyName()].rainIntensity;
   game.storedWater = 0;
   game.tinsFilled = 0;
   game.frame = 0;
@@ -410,6 +569,8 @@ function resetGame() {
   storeWaterBtn.disabled = true;
   buildDamBtn.textContent = 'Build Dam (locked)';
   playAgainBtn.classList.add('hidden');
+  clearImpactFeed();
+  addImpactEvent('Mission ready: collect water and protect the village.');
   setSuggestion('');
   resetRiver();
   updateHud();
@@ -421,6 +582,7 @@ function startGame() {
   game.state = 'playing';
   startBtn.classList.add('hidden');
   startBtn.disabled = true;
+  addImpactEvent('Run started on ' + getDifficultyName() + ' mode.');
   setStatus('Move with arrows, collect rain, and build a dam to route water to the village.');
 }
 
@@ -526,6 +688,7 @@ function loseGame(reason) {
   storeWaterBtn.disabled = true;
   buildDamBtn.textContent = 'Flooded';
   setStatus(reason);
+  addImpactEvent('Village flooded. Try a safer water strategy.');
   setSuggestion('Deep-blue flood took over. Press Play Again.');
   startBtn.disabled = true;
   playAgainBtn.classList.remove('hidden');
@@ -537,7 +700,8 @@ function winGame() {
   buildDamBtn.disabled = true;
   storeWaterBtn.disabled = true;
   buildDamBtn.textContent = 'Village Flourishing ✓';
-  setStatus('Congratulations! Village flourished for 30 seconds under 135 with full storage.');
+  setStatus('Congratulations! Village flourished for ' + game.flourishWinSeconds + ' seconds under ' + game.floodScore + ' with full storage.');
+  addImpactEvent('Village flourished. Clean water access stabilized.');
   setSuggestion('You win! Press Play Again.');
   startBtn.disabled = true;
   playAgainBtn.classList.remove('hidden');
@@ -659,8 +823,9 @@ function buildDam() {
   game.rainIntensity = game.postDamRainIntensity;
   game.river.direction = -1;
   updateHud();
-  setStatus('Dam built! Town now uses 5 stored water per second.');
-  setSuggestion('Keep village flourishing for 30 seconds, stay under ' + game.floodScore + ', and reach 100 stored water.');
+  addImpactEvent('Dam built. Water now reaches the village.');
+  setStatus('Dam built! Town now uses ' + game.drainAmountPerTick + ' stored water per second.');
+  setSuggestion('Keep village flourishing for ' + game.flourishWinSeconds + ' seconds, stay under ' + game.floodScore + ', and reach ' + game.waterStorageMax + ' stored water.');
 }
 
 function storeWater() {
@@ -670,6 +835,7 @@ function storeWater() {
 
   if (game.storedWater >= game.waterStorageMax) {
     setStatus('Storage is already full. Build the dam and protect the village.');
+    addImpactEvent('Storage already full. Keep the village stable.');
     return;
   }
 
@@ -688,6 +854,7 @@ function storeWater() {
   }
 
   updateHud();
+  addImpactEvent('Stored ' + pointsToStore + ' water for the village.');
   setStatus('Stored ' + pointsToStore + ' water from score.');
 }
 
@@ -774,6 +941,9 @@ function collectDrop(index) {
     game.reachedMaxStorage = true;
   }
   game.river.maxSegments = Math.min(190, game.river.maxSegments + 1);
+  if (game.score % 8 === 0) {
+    addImpactEvent('Collected rain drops: ' + game.score + '.');
+  }
   updateHud();
   maybeShowDamSuggestion();
 }
@@ -1067,6 +1237,19 @@ storeWaterBtn.addEventListener('click', function() {
 playAgainBtn.addEventListener('click', function() {
   startGame();
 });
+
+if (difficultySelect) {
+  difficultySelect.addEventListener('change', function() {
+    applyDifficulty();
+    updateHud();
+    updateTimerHud(performance.now());
+    if (game.state === 'start') {
+      setStatus('Difficulty set to ' + getDifficultyName() + '. Press Start.');
+    } else {
+      setStatus('Difficulty changed to ' + getDifficultyName() + '. It fully applies on next run.');
+    }
+  });
+}
 
 resetGame();
 updateHud();
