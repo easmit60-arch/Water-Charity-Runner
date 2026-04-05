@@ -20,7 +20,10 @@ If you’re curious, I’ll share a short clip/screenshot in the comments (or ch
 ## Project File Alignment
 
 -Primary playable game (Prompt 8 mechanics): index.html
+-Styling: style.css
 -Prompt guide text (all prompts): README.md
+-Development container config: devcontainer.json
+-Game assets and images: RSN.img/ (Cash.gif, RSN(Logo).webp, WWAD.gif, stock-neon-silhouette.jpg, Sex_Worker_Social.gif)
 -Legacy starter files from the earlier grid game were removed to keep the project focused on the active build.
 
 ## Prompt 1: Theme + Mechanics Planning

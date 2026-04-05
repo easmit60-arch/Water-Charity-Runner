@@ -15,7 +15,7 @@
   }
 
   body {
-    background: #0f4f82;
+    background: radial-gradient(circle at 20% 15%, #121b38 0%, #070b17 42%, #030509 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -30,8 +30,9 @@
     flex-direction: column;
     gap: 8px;
     position: relative;
-    background: #0d3b66;
-    border: 1px solid #365a7b;
+    background: rgba(5, 12, 24, 0.92);
+    border: 1px solid #00d9ff;
+    box-shadow: 0 0 16px rgba(0, 217, 255, 0.45), 0 0 28px rgba(255, 0, 110, 0.2);
     border-radius: 10px;
     padding: 10px;
   }
@@ -47,7 +48,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #d8eeff;
+    background: rgba(0, 0, 0, 0.62);
+    border: 1px solid #ff006e;
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.45);
     border-radius: 6px;
     padding: 4px 8px;
   }
@@ -60,7 +63,8 @@
   #brandText {
     font-weight: 700;
     font-size: 14px;
-    color: #ffd35f;
+    color: #ff4b8f;
+    text-shadow: 0 0 8px rgba(255, 0, 110, 0.7);
   }
 
   #boardWrap {
@@ -89,7 +93,7 @@
   #startBtn img {
     width: 100%;
     height: auto;
-    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+    filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.85)) drop-shadow(0 0 16px rgba(255, 0, 110, 0.45));
   }
 
   #startBtn:hover {
@@ -107,18 +111,21 @@
     gap: 10px;
     font-size: 12px;
     padding: 6px 8px;
-    border: 1px solid #365a7b;
+    border: 1px solid #00d9ff;
     border-radius: 6px;
-    background: #d8eeff;
+    background: rgba(4, 14, 26, 0.9);
+    box-shadow: inset 0 0 10px rgba(0, 217, 255, 0.2);
   }
 
   .top-nav a {
-    color: #0d3b66;
+    color: #00d9ff;
     text-decoration: none;
     font-weight: 600;
+    text-shadow: 0 0 6px rgba(0, 217, 255, 0.55);
   }
 
   .top-nav a:hover {
+    color: #ff4b8f;
     text-decoration: underline;
   }
 
@@ -181,18 +188,18 @@
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    border: 1px solid #365a7b;
+    border: 1px solid #00d9ff;
     border-radius: 6px;
     padding: 6px 8px;
-    background: #12365a;
-    color: #e5f5ff;
+    background: rgba(2, 14, 30, 0.9);
+    color: #c9efff;
     font-size: 12px;
   }
 
   #difficultySelect {
-    border: 1px solid #8fc7ef;
-    background: #d8eeff;
-    color: #0d3b66;
+    border: 1px solid #00d9ff;
+    background: #0b1527;
+    color: #9befff;
     border-radius: 6px;
     padding: 4px 8px;
     font-weight: 700;
@@ -210,9 +217,9 @@
   }
 
   #buildDam {
-    border: 1px solid #4b7ea8;
-    background: #12365a;
-    color: #d8eeff;
+    border: 1px solid #ff006e;
+    background: #14081a;
+    color: #ffd0e8;
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 12px;
@@ -220,8 +227,8 @@
   }
 
   #storeWater {
-    border: 1px solid #4b7ea8;
-    background: #12365a;
+    border: 1px solid #00d9ff;
+    background: #061226;
     color: #d8eeff;
     border-radius: 6px;
     padding: 6px 10px;
@@ -241,12 +248,13 @@
   }
 
   canvas {
-    border: 1px solid #7ab6e8;
+    border: 1px solid #00d9ff;
     display: block;
     width: 100%;
     max-width: 440px;
     align-self: center;
-    background: #0b4a78;
+    background: #040b18;
+    box-shadow: inset 0 0 18px rgba(0, 217, 255, 0.2), 0 0 14px rgba(0, 217, 255, 0.35);
   }
 
   #status {
@@ -265,29 +273,32 @@
   }
 
   #playAgainBtn {
-    border: 1px solid #8fc7ef;
-    background: #1f6aa2;
-    color: #f2fbff;
+    border: 1px solid #ff006e;
+    background: #230d2f;
+    color: #ffe4f3;
     border-radius: 6px;
     padding: 8px 12px;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     align-self: center;
+    box-shadow: 0 0 12px rgba(255, 0, 110, 0.4);
   }
 
   #impactPanel {
-    border: 1px solid #365a7b;
+    border: 1px solid #00d9ff;
     border-radius: 6px;
-    background: #0f3f6b;
+    background: rgba(3, 14, 26, 0.88);
+    box-shadow: inset 0 0 10px rgba(0, 217, 255, 0.15);
     padding: 8px;
   }
 
   #impactTitle {
     margin: 0 0 6px;
-    color: #ffd35f;
+    color: #ff4b8f;
     font-size: 12px;
     font-weight: 700;
+    text-shadow: 0 0 8px rgba(255, 0, 110, 0.6);
   }
 
   #impactFeed {
@@ -303,7 +314,7 @@
   }
 
   #cwFooter {
-    border-top: 1px solid #365a7b;
+    border-top: 1px solid #00d9ff;
     margin-top: 4px;
     padding-top: 8px;
     display: flex;
@@ -315,12 +326,14 @@
   }
 
   #cwFooter a {
-    color: #ffd35f;
+    color: #00d9ff;
     font-weight: 700;
     text-decoration: none;
+    text-shadow: 0 0 8px rgba(0, 217, 255, 0.5);
   }
 
   #cwFooter a:hover {
+    color: #ff4b8f;
     text-decoration: underline;
   }
 
@@ -352,7 +365,7 @@
   <div id="topBar" class="logo-image">
     <div id="brand" class="logo">
       <a id="upper-logo" href="https://rougesupportnetwork.org/" target="_blank" rel="noopener noreferrer" aria-label="Visit Rouge Support Network">
-        <img src="https://images.squarespace-cdn.com/content/v1/59210e229f745601896d0cdd/386489bc-7a48-4543-ad4b-746e0c05b521/Copy+of+Red+Lipstick+Support+%28Facebook+Cover%29+%283%29.jpg?format=1500w" alt="Rouge Support Network">
+        <img src="RSN.img/RSN(Logo).webp" alt="Rouge Support Network">
       </a>
       <a id="brandText" class="lower-logo" href="https://rougesupportnetwork.org/" target="_blank" rel="noopener noreferrer">Rouge Support Network</a>
     </div>
@@ -388,7 +401,7 @@
   <div id="boardWrap">
     <canvas width="440" height="440" id="game"></canvas>
     <button id="startBtn" type="button" aria-label="Start game">
-      <img src="Water game/img/water-can.png" alt="Start Rouge Support Network Runner">
+      <img src="RSN.img/Cash.gif" alt="Start Rouge Support Network Runner">
     </button>
   </div>
   <p id="status"></p>
@@ -493,6 +506,33 @@ const SCORE_MILESTONES = [
   { score: 50, message: 'Milestone: 50 drops. Community water access is expanding.' },
   { score: 80, message: 'Milestone: 80 drops. Village resilience is improving.' }
 ];
+
+// Load custom asset images
+const gameImages = {
+  village: null,
+  floodLoss: null,
+  damBuilt: null
+};
+
+function loadGameImages() {
+  const villageImg = new Image();
+  villageImg.src = 'RSN.img/stock-neon-silhouette.jpg';
+  villageImg.onload = function() {
+    gameImages.village = villageImg;
+  };
+
+  const floodImg = new Image();
+  floodImg.src = 'RSN.img/WWAD.gif';
+  floodImg.onload = function() {
+    gameImages.floodLoss = floodImg;
+  };
+
+  const damImg = new Image();
+  damImg.src = 'RSN.img/Sex_Worker_Social.gif';
+  damImg.onload = function() {
+    gameImages.damBuilt = damImg;
+  };
+}
 
 let audioContext = null;
 
@@ -1147,36 +1187,43 @@ function drawVillage() {
   const villageW = 132;
   const villageH = 92;
 
-  context.fillStyle = game.damBuilt ? '#9adf83' : '#ccb086';
-  context.fillRect(villageX, villageY + 26, villageW, villageH - 26);
+  // Draw village image if loaded
+  if (gameImages.village) {
+    context.drawImage(gameImages.village, villageX, villageY, villageW, villageH);
+  } else {
+    // Fallback to original drawing if image not loaded
+    context.fillStyle = game.damBuilt ? '#9adf83' : '#ccb086';
+    context.fillRect(villageX, villageY + 26, villageW, villageH - 26);
 
-  context.fillStyle = game.damBuilt ? '#ffdf8d' : '#c8ae81';
-  context.beginPath();
-  context.arc(villageX + villageW - 20, villageY + 16, 10, 0, Math.PI * 2);
-  context.fill();
-
-  context.fillStyle = game.damBuilt ? '#5b9f4f' : '#7d6b54';
-  context.fillRect(villageX + 12, villageY + 38, 18, 30);
-  context.fillRect(villageX + 96, villageY + 40, 18, 28);
-
-  if (!game.damBuilt) {
-    context.strokeStyle = '#8d6e50';
+    context.fillStyle = game.damBuilt ? '#ffdf8d' : '#c8ae81';
     context.beginPath();
-    context.moveTo(villageX + 20, villageY + 80);
-    context.lineTo(villageX + 36, villageY + 74);
-    context.lineTo(villageX + 52, villageY + 82);
-    context.lineTo(villageX + 68, villageY + 76);
-    context.lineTo(villageX + 84, villageY + 83);
-    context.stroke();
+    context.arc(villageX + villageW - 20, villageY + 16, 10, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = game.damBuilt ? '#5b9f4f' : '#7d6b54';
+    context.fillRect(villageX + 12, villageY + 38, 18, 30);
+    context.fillRect(villageX + 96, villageY + 40, 18, 28);
+
+    if (!game.damBuilt) {
+      context.strokeStyle = '#8d6e50';
+      context.beginPath();
+      context.moveTo(villageX + 20, villageY + 80);
+      context.lineTo(villageX + 36, villageY + 74);
+      context.lineTo(villageX + 52, villageY + 82);
+      context.lineTo(villageX + 68, villageY + 76);
+      context.lineTo(villageX + 84, villageY + 83);
+      context.stroke();
+    }
+
+    context.fillStyle = '#9d744a';
+    context.fillRect(villageX + 42, villageY + 44, 22, 22);
+    context.fillRect(villageX + 72, villageY + 44, 22, 22);
+
+    context.fillStyle = game.damBuilt ? '#2f9bff' : '#8fa7b9';
+    context.fillRect(villageX + 28, villageY + 72, 74, 9);
   }
 
-  context.fillStyle = '#9d744a';
-  context.fillRect(villageX + 42, villageY + 44, 22, 22);
-  context.fillRect(villageX + 72, villageY + 44, 22, 22);
-
-  context.fillStyle = game.damBuilt ? '#2f9bff' : '#8fa7b9';
-  context.fillRect(villageX + 28, villageY + 72, 74, 9);
-
+  // Draw water flow to village when dam is built
   if (game.damBuilt) {
     context.beginPath();
     context.moveTo(112, 82);
@@ -1232,6 +1279,14 @@ function drawBoard() {
   }
 
   drawVillage();
+  
+  // Draw dam status image when dam is built
+  if (game.damBuilt && gameImages.damBuilt) {
+    context.globalAlpha = 0.7;
+    context.drawImage(gameImages.damBuilt, 200, 100, 220, 220);
+    context.globalAlpha = 1;
+  }
+  
   drawDrops();
   drawRiver();
 
@@ -1258,17 +1313,25 @@ function drawFloodLossOverlay() {
   context.fillStyle = 'rgba(7, 76, 140, 0.95)';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.fillStyle = 'rgba(27, 118, 196, 0.45)';
-  context.fillRect(0, 0, canvas.width, canvas.height);
+  // Draw flood loss image if loaded
+  if (gameImages.floodLoss) {
+    context.globalAlpha = 0.6;
+    context.drawImage(gameImages.floodLoss, 0, 0, canvas.width, canvas.height);
+    context.globalAlpha = 1;
+  } else {
+    // Fallback bubble animation if image not loaded
+    context.fillStyle = 'rgba(27, 118, 196, 0.45)';
+    context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.strokeStyle = 'rgba(200, 238, 255, 0.9)';
-  for (let i = 0; i < 20; i++) {
-    const bubbleX = (i * 31 + game.frame * 1.5) % (canvas.width + 20);
-    const bubbleY = canvas.height - ((game.frame * 1.1 + i * 29) % 260);
-    const radius = 3 + (i % 4);
-    context.beginPath();
-    context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
-    context.stroke();
+    context.strokeStyle = 'rgba(200, 238, 255, 0.9)';
+    for (let i = 0; i < 20; i++) {
+      const bubbleX = (i * 31 + game.frame * 1.5) % (canvas.width + 20);
+      const bubbleY = canvas.height - ((game.frame * 1.1 + i * 29) % 260);
+      const radius = 3 + (i % 4);
+      context.beginPath();
+      context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
+      context.stroke();
+    }
   }
 
   context.fillStyle = '#ffffff';
@@ -1409,6 +1472,7 @@ if (difficultySelect) {
   });
 }
 
+loadGameImages();
 resetGame();
 updateHud();
 setStatus(COPY.startHint);
