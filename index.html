@@ -153,18 +153,18 @@
     font-size: 12px;
   }
 
-  #storedWater {
+  #bankedCashDisplay {
     min-width: 104px;
     font-weight: 700;
     color: #c9ecff;
   }
 
-  #tinRow {
+  #bankSlots {
     display: flex;
     gap: 4px;
   }
 
-  .tin {
+  .bank-slot {
     width: 13px;
     height: 16px;
     border-radius: 3px;
@@ -172,11 +172,11 @@
     background: #d7dfe7;
   }
 
-  .tin.filled {
+  .bank-slot.filled {
     background: linear-gradient(to top, #2f9bff 0 70%, #d7dfe7 70%);
   }
 
-  #damPanel {
+  #investmentPanel {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -210,13 +210,13 @@
     font-size: 12px;
   }
 
-  #damButtons {
+  #investmentControls {
     display: flex;
     align-items: center;
     gap: 6px;
   }
 
-  #buildDam {
+  #investButton {
     border: 1px solid #ff006e;
     background: #14081a;
     color: #ffd0e8;
@@ -226,7 +226,7 @@
     cursor: pointer;
   }
 
-  #storeWater {
+  #bankButton {
     border: 1px solid #00d9ff;
     background: #061226;
     color: #d8eeff;
@@ -236,8 +236,8 @@
     cursor: pointer;
   }
 
-  #buildDam:disabled,
-  #storeWater:disabled {
+  #investButton:disabled,
+  #bankButton:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -373,19 +373,19 @@
   <div id="hud">
     <span id="score">Score: 0</span>
     <span id="timer">Flourishing: --</span>
-    <div id="tinInfo">
-      <span id="storedWater">Banked: 0/100</span>
-      <div id="tinRow">
-        <span class="tin" id="tin1"></span>
-        <span class="tin" id="tin2"></span>
-        <span class="tin" id="tin3"></span>
+    <div id="bankInfo">
+      <span id="bankedCashDisplay">Banked: 0/100</span>
+      <div id="bankSlots">
+        <span class="bank-slot" id="slot-1"></span>
+        <span class="bank-slot" id="slot-2"></span>
+        <span class="bank-slot" id="slot-3"></span>
       </div>
     </div>
   </div>
-  <div id="damPanel">
-    <div id="damButtons">
-      <button id="buildDam" type="button" disabled>Invest (locked)</button>
-      <button id="storeWater" type="button" disabled>Bank Cash: S</button>
+  <div id="investmentPanel">
+    <div id="investmentControls">
+      <button id="investButton" type="button" disabled>Invest (locked)</button>
+      <button id="bankButton" type="button" disabled>Bank Cash: S</button>
     </div>
     <span id="controlHint">Move: ← → ↑ ↓ | Invest: D | Bank Cash: S</span>
   </div>
@@ -422,19 +422,19 @@ const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
 const scoreEl = document.getElementById('score');
 const timerEl = document.querySelector('#timer');
-const storedWaterEl = document.getElementById('storedWater');
+const bankedCashDisplay = document.getElementById('bankedCashDisplay');
 const statusEl = document.getElementById('status');
 const milestoneEl = document.getElementById('milestone');
 const startBtn = document.getElementById('startBtn');
-const buildDamBtn = document.getElementById('buildDam');
-const storeWaterBtn = document.getElementById('storeWater');
+const investButton = document.getElementById('investButton');
+const bankButton = document.getElementById('bankButton');
 const playAgainBtn = document.getElementById('playAgainBtn');
 const difficultySelect = document.getElementById('difficultySelect');
 const impactFeedEl = document.getElementById('impactFeed');
-const tinEls = [
-  document.getElementById('tin1'),
-  document.getElementById('tin2'),
-  document.getElementById('tin3')
+const bankSlots = [
+  document.getElementById('slot-1'),
+  document.getElementById('slot-2'),
+  document.getElementById('slot-3')
 ];
 
 const AGE_VERIFICATION = {
@@ -510,27 +510,39 @@ const SCORE_MILESTONES = [
 // Load custom asset images
 const gameImages = {
   village: null,
-  floodLoss: null,
-  damBuilt: null
+  floodLossGif: null,
+  damBuiltGif: null
 };
 
 function loadGameImages() {
+  // Load village static image
   const villageImg = new Image();
   villageImg.src = 'RSN.img/stock-neon-silhouette.jpg';
   villageImg.onload = function() {
     gameImages.village = villageImg;
   };
+  villageImg.onerror = function() {
+    console.warn('Failed to load village image');
+  };
 
+  // Load WWAD.gif - browser will animate it natively when drawn to canvas
   const floodImg = new Image();
   floodImg.src = 'RSN.img/WWAD.gif';
   floodImg.onload = function() {
-    gameImages.floodLoss = floodImg;
+    gameImages.floodLossGif = floodImg;
+  };
+  floodImg.onerror = function() {
+    console.warn('Failed to load flood loss GIF');
   };
 
+  // Load Sex_Worker_Social.gif - browser will animate it natively when drawn to canvas
   const damImg = new Image();
   damImg.src = 'RSN.img/Sex_Worker_Social.gif';
   damImg.onload = function() {
-    gameImages.damBuilt = damImg;
+    gameImages.damBuiltGif = damImg;
+  };
+  damImg.onerror = function() {
+    console.warn('Failed to load dam built GIF');
   };
 }
 
@@ -761,9 +773,9 @@ function resetGame() {
   game.keys.down = false;
   startBtn.classList.remove('hidden');
   startBtn.disabled = false;
-  buildDamBtn.disabled = true;
-  storeWaterBtn.disabled = true;
-  buildDamBtn.textContent = 'Invest (locked)';
+  investButton.disabled = true;
+  bankButton.disabled = true;
+  investButton.textContent = 'Invest (locked)';
   playAgainBtn.classList.add('hidden');
   clearImpactFeed();
   addImpactEvent(COPY.missionReady);
@@ -785,36 +797,36 @@ function startGame() {
 
 function updateHud() {
   scoreEl.textContent = 'Score: ' + game.score + ' / ' + game.floodScore;
-  storeWaterBtn.disabled = game.state !== 'playing' || game.score <= 0;
+  bankButton.disabled = game.state !== 'playing' || game.score <= 0;
 
-  const perTin = game.waterStorageMax / tinEls.length;
-  game.tinsFilled = Math.min(tinEls.length, Math.floor(game.storedWater / perTin));
-  storedWaterEl.textContent = 'Banked: ' + game.storedWater + '/' + game.waterStorageMax;
+  const perTin = game.waterStorageMax / bankSlots.length;
+  game.tinsFilled = Math.min(bankSlots.length, Math.floor(game.storedWater / perTin));
+  bankedCashDisplay.textContent = 'Banked: ' + game.storedWater + '/' + game.waterStorageMax;
 
-  for (let i = 0; i < tinEls.length; i++) {
+  for (let i = 0; i < bankSlots.length; i++) {
     const fillRatio = Math.max(0, Math.min(1, (game.storedWater - i * perTin) / perTin));
     const fillPercent = Math.round(fillRatio * 100);
-    tinEls[i].style.background = 'linear-gradient(to top, #39ff14 0 ' + fillPercent + '%, #170f24 ' + fillPercent + '% 100%)';
-    tinEls[i].style.boxShadow = fillPercent > 0 ? '0 0 8px rgba(57, 255, 20, 0.65)' : 'none';
+    bankSlots[i].style.background = 'linear-gradient(to top, #39ff14 0 ' + fillPercent + '%, #170f24 ' + fillPercent + '% 100%)';
+    bankSlots[i].style.boxShadow = fillPercent > 0 ? '0 0 8px rgba(57, 255, 20, 0.65)' : 'none';
   }
 
   if (game.damBuilt) {
-    buildDamBtn.textContent = 'Investment Active ✓';
-    buildDamBtn.disabled = true;
+    investButton.textContent = 'Investment Active ✓';
+    investButton.disabled = true;
     return;
   }
 
   if (game.score >= game.damPromptScore) {
     if (game.storedWater >= game.damPromptScore && game.state === 'playing') {
-      buildDamBtn.textContent = 'Invest (D)';
-      buildDamBtn.disabled = false;
+      investButton.textContent = 'Invest (D)';
+      investButton.disabled = false;
     } else {
-      buildDamBtn.textContent = 'Bank ' + game.damPromptScore + ' cash first';
-      buildDamBtn.disabled = true;
+      investButton.textContent = 'Bank ' + game.damPromptScore + ' cash first';
+      investButton.disabled = true;
     }
   } else {
-    buildDamBtn.textContent = 'Invest (locked)';
-    buildDamBtn.disabled = true;
+    investButton.textContent = 'Invest (locked)';
+    investButton.disabled = true;
   }
 }
 
@@ -882,9 +894,9 @@ function checkFloodLoss() {
 function loseGame(reason) {
   // Loss screen state: show crash messaging and Play Again button.
   game.state = 'lost';
-  buildDamBtn.disabled = true;
-  storeWaterBtn.disabled = true;
-  buildDamBtn.textContent = 'Crashed';
+  investButton.disabled = true;
+  bankButton.disabled = true;
+  investButton.textContent = 'Crashed';
   setStatus(reason);
   playSfx('lose');
   addImpactEvent('Market crash. Try a safer cash strategy.');
@@ -896,9 +908,9 @@ function loseGame(reason) {
 function winGame() {
   // Win screen state: show celebration messaging, Play Again, and confetti.
   game.state = 'won';
-  buildDamBtn.disabled = true;
-  storeWaterBtn.disabled = true;
-  buildDamBtn.textContent = 'Club Flourishing ✓';
+  investButton.disabled = true;
+  bankButton.disabled = true;
+  investButton.textContent = 'Club Flourishing ✓';
   setStatus('Congratulations! The Club flourished for ' + game.flourishWinSeconds + ' seconds under ' + game.floodScore + ' with full banked cash.');
   playSfx('win');
   addImpactEvent('The Club flourished. Community support stabilized.');
@@ -1279,10 +1291,10 @@ function drawBoard() {
 
   drawVillage();
   
-  // Draw dam status image when dam is built
-  if (game.damBuilt && gameImages.damBuilt) {
+  // Draw animated dam status GIF when dam is built
+  if (game.damBuilt && gameImages.damBuiltGif) {
     context.globalAlpha = 0.7;
-    context.drawImage(gameImages.damBuilt, 200, 100, 220, 220);
+    context.drawImage(gameImages.damBuiltGif, 200, 100, 220, 220);
     context.globalAlpha = 1;
   }
   
@@ -1312,10 +1324,10 @@ function drawFloodLossOverlay() {
   context.fillStyle = 'rgba(10, 3, 18, 0.95)';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw flood loss image if loaded
-  if (gameImages.floodLoss) {
+  // Draw animated flood loss GIF if available
+  if (gameImages.floodLossGif) {
     context.globalAlpha = 0.6;
-    context.drawImage(gameImages.floodLoss, 0, 0, canvas.width, canvas.height);
+    context.drawImage(gameImages.floodLossGif, 0, 0, canvas.width, canvas.height);
     context.globalAlpha = 1;
   } else {
     // Fallback neon pulse animation if image not loaded
@@ -1448,11 +1460,11 @@ document.addEventListener('keyup', function(e) {
 
 startBtn.addEventListener('click', beginGameFlow);
 
-buildDamBtn.addEventListener('click', function() {
+investButton.addEventListener('click', function() {
   buildDam();
 });
 
-storeWaterBtn.addEventListener('click', function() {
+bankButton.addEventListener('click', function() {
   storeWater();
 });
 
