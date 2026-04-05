@@ -423,6 +423,34 @@ const tinEls = [
   document.getElementById('tin3')
 ];
 
+const AGE_VERIFICATION = {
+  minAge: 13,
+  storageKey: 'waterRunnerAgeVerified'
+};
+
+const COPY = {
+  missionReady: 'Mission ready: collect water and protect the village.',
+  startHint: 'Click Start to launch the river.',
+  startRun: function(level) {
+    return 'Run started on ' + level + ' mode.';
+  },
+  routeWaterHint: 'Move with arrows, collect rain, and build a dam to route water to the village.',
+  buildGoalHint: function(floodScore, storageMax) {
+    return 'Store water, build the dam, keep score under ' + floodScore + ', and reach ' + storageMax + ' stored water.';
+  },
+  flourishHint: function(remainingSeconds, storageGoal, floodScore) {
+    return 'Flourish ' + remainingSeconds + 's left | ' + storageGoal + ' | keep score under ' + floodScore + '.';
+  },
+  agePrompt: function(minAge) {
+    return 'Enter your age to play Water Runner. You must be at least ' + minAge + '.';
+  },
+  ageInvalid: 'Please enter a valid whole-number age to continue.',
+  ageDenied: function(minAge) {
+    return 'You must be at least ' + minAge + ' to play this game.';
+  },
+  ageAccepted: 'Age check complete. You can now play.'
+};
+
 const game = {
   state: 'start',
   frame: 0,
@@ -622,6 +650,44 @@ function setSuggestion(message) {
   milestoneEl.textContent = message;
 }
 
+function isAgeVerified() {
+  return localStorage.getItem(AGE_VERIFICATION.storageKey) === 'true';
+}
+
+function verifyAgeBeforePlay() {
+  if (isAgeVerified()) {
+    return true;
+  }
+
+  const input = window.prompt(COPY.agePrompt(AGE_VERIFICATION.minAge), '');
+  if (input === null) {
+    return false;
+  }
+
+  const age = Number.parseInt(input, 10);
+  if (!Number.isFinite(age) || age < 0) {
+    setStatus(COPY.ageInvalid);
+    return false;
+  }
+
+  if (age < AGE_VERIFICATION.minAge) {
+    setStatus(COPY.ageDenied(AGE_VERIFICATION.minAge));
+    return false;
+  }
+
+  localStorage.setItem(AGE_VERIFICATION.storageKey, 'true');
+  setStatus(COPY.ageAccepted);
+  return true;
+}
+
+function beginGameFlow() {
+  if (!verifyAgeBeforePlay()) {
+    return;
+  }
+
+  startGame();
+}
+
 function resetRiver() {
   game.river.x = canvas.width / 2;
   game.river.y = canvas.height - 26;
@@ -659,7 +725,7 @@ function resetGame() {
   buildDamBtn.textContent = 'Build Dam (locked)';
   playAgainBtn.classList.add('hidden');
   clearImpactFeed();
-  addImpactEvent('Mission ready: collect water and protect the village.');
+  addImpactEvent(COPY.missionReady);
   setSuggestion('');
   resetRiver();
   updateHud();
@@ -672,8 +738,8 @@ function startGame() {
   ensureAudioContext();
   startBtn.classList.add('hidden');
   startBtn.disabled = true;
-  addImpactEvent('Run started on ' + getDifficultyName() + ' mode.');
-  setStatus('Move with arrows, collect rain, and build a dam to route water to the village.');
+  addImpactEvent(COPY.startRun(getDifficultyName()));
+  setStatus(COPY.routeWaterHint);
 }
 
 function updateHud() {
@@ -701,7 +767,7 @@ function updateHud() {
       buildDamBtn.textContent = 'Build Dam (D)';
       buildDamBtn.disabled = false;
     } else {
-      buildDamBtn.textContent = 'Store 25 water first';
+      buildDamBtn.textContent = 'Store ' + game.damPromptScore + ' water first';
       buildDamBtn.disabled = true;
     }
   } else {
@@ -746,7 +812,7 @@ function maybeShowDamSuggestion() {
   if (game.score >= game.damPromptScore && game.score < game.clearPromptScore && !game.damPromptShown) {
     game.damPromptShown = true;
     setStatus('Build a dam now: route water to the dry village.');
-    setSuggestion('Store water, build the dam, keep score under 135, and reach 100 stored water.');
+    setSuggestion(COPY.buildGoalHint(game.floodScore, game.waterStorageMax));
   }
 
   if (game.score >= game.clearPromptScore && !game.damBuilt) {
@@ -876,7 +942,7 @@ function updateFlourishWin(nowMs) {
 
   if (game.score < game.floodScore) {
     const storageGoal = game.reachedMaxStorage ? 'storage goal met' : ('store ' + (game.waterStorageMax - game.storedWater) + ' more water');
-    setSuggestion('Flourish ' + remainingSeconds + 's left | ' + storageGoal + ' | keep score under ' + game.floodScore + '.');
+    setSuggestion(COPY.flourishHint(remainingSeconds, storageGoal, game.floodScore));
   }
 
   if (elapsedSeconds >= game.flourishWinSeconds) {
@@ -1223,7 +1289,7 @@ function drawWinOverlay() {
   context.font = 'bold 18px Arial';
   context.fillText('Village Flourishing Achieved', canvas.width / 2, canvas.height / 2 + 10);
   context.font = '14px Arial';
-  context.fillText('You protected the town for 30 seconds with full water storage.', canvas.width / 2, canvas.height / 2 + 34);
+  context.fillText('You protected the town for ' + game.flourishWinSeconds + ' seconds with full water storage.', canvas.width / 2, canvas.height / 2 + 34);
 }
 
 function loop() {
@@ -1317,9 +1383,7 @@ document.addEventListener('keyup', function(e) {
   }
 });
 
-startBtn.addEventListener('click', function() {
-  startGame();
-});
+startBtn.addEventListener('click', beginGameFlow);
 
 buildDamBtn.addEventListener('click', function() {
   buildDam();
@@ -1329,9 +1393,7 @@ storeWaterBtn.addEventListener('click', function() {
   storeWater();
 });
 
-playAgainBtn.addEventListener('click', function() {
-  startGame();
-});
+playAgainBtn.addEventListener('click', beginGameFlow);
 
 if (difficultySelect) {
   difficultySelect.addEventListener('change', function() {
@@ -1348,7 +1410,7 @@ if (difficultySelect) {
 
 resetGame();
 updateHud();
-setStatus('Click Start to launch the river.');
+setStatus(COPY.startHint);
 requestAnimationFrame(loop);
 </script>
 </body>

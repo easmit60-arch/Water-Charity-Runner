@@ -19,7 +19,7 @@ If you’re curious, I’ll share a short clip/screenshot in the comments (or ch
 
 - Primary playable game (Prompt 8 mechanics): `index.html`
 - Prompt guide text (all prompts): `README.md`
-- Legacy starter files from the earlier grid game: `script.js` + `style.css` (kept for reference)
+- Legacy starter files from the earlier grid game were removed to keep the project focused on the active build.
 
 ## Prompt 1: Theme + Mechanics Planning
 
