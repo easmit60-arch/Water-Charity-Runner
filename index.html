@@ -501,10 +501,10 @@ const game = {
 };
 
 const SCORE_MILESTONES = [
-  { score: 10, message: 'Milestone: 10 drops collected. The Club starts filling up.' },
-  { score: 25, message: 'Milestone: 25 drops. Investment unlock is active.' },
-  { score: 50, message: 'Milestone: 50 drops. Community support is expanding.' },
-  { score: 80, message: 'Milestone: 80 drops. RSN impact is thriving.' }
+  { score: 10, message: 'Milestone: 10 dollar signs collected. The Club starts filling up.' },
+  { score: 25, message: 'Milestone: 25 dollar signs. Investment unlock is active.' },
+  { score: 50, message: 'Milestone: 50 dollar signs. Community support is expanding.' },
+  { score: 80, message: 'Milestone: 80 dollar signs. RSN impact is thriving.' }
 ];
 
 // Load custom asset images
@@ -794,7 +794,8 @@ function updateHud() {
   for (let i = 0; i < tinEls.length; i++) {
     const fillRatio = Math.max(0, Math.min(1, (game.storedWater - i * perTin) / perTin));
     const fillPercent = Math.round(fillRatio * 100);
-    tinEls[i].style.background = 'linear-gradient(to top, #00d9ff 0 ' + fillPercent + '%, #170f24 ' + fillPercent + '% 100%)';
+    tinEls[i].style.background = 'linear-gradient(to top, #39ff14 0 ' + fillPercent + '%, #170f24 ' + fillPercent + '% 100%)';
+    tinEls[i].style.boxShadow = fillPercent > 0 ? '0 0 8px rgba(57, 255, 20, 0.65)' : 'none';
   }
 
   if (game.damBuilt) {
@@ -1144,7 +1145,7 @@ function collectDrop(index) {
   game.river.maxSegments = Math.min(190, game.river.maxSegments + 1);
   checkScoreMilestones();
   if (game.score % 8 === 0) {
-    addImpactEvent('Collected cash drops: ' + game.score + '.');
+    addImpactEvent('Collected dollar signs: ' + game.score + '.');
   }
   updateHud();
   maybeShowDamSuggestion();
@@ -1182,48 +1183,40 @@ function updateDrops() {
 }
 
 function drawVillage() {
-  const villageX = 10;
-  const villageY = 10;
-  const villageW = 132;
-  const villageH = 92;
+  const clubX = 10;
+  const clubY = 10;
+  const clubW = 132;
+  const clubH = 92;
 
-  // Draw village image if loaded
+  // Draw Club image if loaded.
   if (gameImages.village) {
-    context.drawImage(gameImages.village, villageX, villageY, villageW, villageH);
+    context.drawImage(gameImages.village, clubX, clubY, clubW, clubH);
   } else {
-    // Fallback to original drawing if image not loaded
-    context.fillStyle = game.damBuilt ? '#9adf83' : '#ccb086';
-    context.fillRect(villageX, villageY + 26, villageW, villageH - 26);
+    // Fallback neon Club panel if image is unavailable.
+    context.fillStyle = '#070f1f';
+    context.fillRect(clubX, clubY, clubW, clubH);
 
-    context.fillStyle = game.damBuilt ? '#ffdf8d' : '#c8ae81';
-    context.beginPath();
-    context.arc(villageX + villageW - 20, villageY + 16, 10, 0, Math.PI * 2);
-    context.fill();
+    context.strokeStyle = game.damBuilt ? '#39ff14' : '#00d9ff';
+    context.lineWidth = 2;
+    context.strokeRect(clubX + 1, clubY + 1, clubW - 2, clubH - 2);
+    context.lineWidth = 1;
 
-    context.fillStyle = game.damBuilt ? '#5b9f4f' : '#7d6b54';
-    context.fillRect(villageX + 12, villageY + 38, 18, 30);
-    context.fillRect(villageX + 96, villageY + 40, 18, 28);
+    context.fillStyle = '#ff4b8f';
+    context.font = '700 13px Montserrat, sans-serif';
+    context.textAlign = 'left';
+    context.fillText('THE CLUB', clubX + 10, clubY + 22);
 
-    if (!game.damBuilt) {
-      context.strokeStyle = '#8d6e50';
-      context.beginPath();
-      context.moveTo(villageX + 20, villageY + 80);
-      context.lineTo(villageX + 36, villageY + 74);
-      context.lineTo(villageX + 52, villageY + 82);
-      context.lineTo(villageX + 68, villageY + 76);
-      context.lineTo(villageX + 84, villageY + 83);
-      context.stroke();
-    }
+    context.fillStyle = '#00d9ff';
+    context.fillRect(clubX + 10, clubY + 30, clubW - 20, 8);
+    context.fillStyle = '#39ff14';
+    context.fillRect(clubX + 10, clubY + 48, Math.max(12, Math.min(clubW - 20, game.storedWater)), 7);
 
-    context.fillStyle = '#9d744a';
-    context.fillRect(villageX + 42, villageY + 44, 22, 22);
-    context.fillRect(villageX + 72, villageY + 44, 22, 22);
-
-    context.fillStyle = game.damBuilt ? '#2f9bff' : '#8fa7b9';
-    context.fillRect(villageX + 28, villageY + 72, 74, 9);
+    context.fillStyle = '#b9d6ec';
+    context.font = '600 10px Montserrat, sans-serif';
+    context.fillText('BANKED: ' + game.storedWater + '/' + game.waterStorageMax, clubX + 10, clubY + 70);
   }
 
-  // Draw water flow to village when dam is built
+  // Draw neon flow toward The Club while investment is active.
   if (game.damBuilt) {
     context.beginPath();
     context.moveTo(112, 82);
@@ -1279,8 +1272,8 @@ function drawBoard() {
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   context.fillStyle = 'rgba(0,217,255,0.08)';
-  for (let storm = 0; storm < 20; storm++) {
-    const px = (storm * 24 + game.frame * 2) % (canvas.width + 24);
+  for (let neonTick = 0; neonTick < 20; neonTick++) {
+    const px = (neonTick * 24 + game.frame * 2) % (canvas.width + 24);
     context.fillRect(px, 0, 2, 18);
   }
 
