@@ -374,7 +374,7 @@
     <span id="score">Score: 0</span>
     <span id="timer">Flourishing: --</span>
     <div id="tinInfo">
-      <span id="storedWater">Stored: 0/100</span>
+      <span id="storedWater">Banked: 0/100</span>
       <div id="tinRow">
         <span class="tin" id="tin1"></span>
         <span class="tin" id="tin2"></span>
@@ -384,10 +384,10 @@
   </div>
   <div id="damPanel">
     <div id="damButtons">
-      <button id="buildDam" type="button" disabled>Build Dam (locked)</button>
-      <button id="storeWater" type="button" disabled>Store Water: S</button>
+      <button id="buildDam" type="button" disabled>Invest (locked)</button>
+      <button id="storeWater" type="button" disabled>Bank Cash: S</button>
     </div>
-    <span id="controlHint">Move: ← → ↑ ↓ | Build Dam: D | Store Water: S</span>
+    <span id="controlHint">Move: ← → ↑ ↓ | Invest: D | Bank Cash: S</span>
   </div>
   <div id="difficultyPanel">
     <label for="difficultySelect">Difficulty</label>
@@ -439,18 +439,18 @@ const tinEls = [
 
 const AGE_VERIFICATION = {
   minAge: 13,
-  storageKey: 'waterRunnerAgeVerified'
+  storageKey: 'cashRunnerAgeVerified'
 };
 
 const COPY = {
-  missionReady: 'Mission ready: collect water and protect the village.',
-  startHint: 'Click Start to launch the river.',
+  missionReady: 'Mission ready: collect cash and fund The Club.',
+  startHint: 'Click Start to launch the run.',
   startRun: function(level) {
     return 'Run started on ' + level + ' mode.';
   },
-  routeWaterHint: 'Move with arrows, collect rain, and build a dam to route water to the village.',
+  routeWaterHint: 'Move with arrows, collect cash drops, and invest to power up The Club.',
   buildGoalHint: function(floodScore, storageMax) {
-    return 'Store water, build the dam, keep score under ' + floodScore + ', and reach ' + storageMax + ' stored water.';
+    return 'Bank cash, invest, keep score under ' + floodScore + ', and reach ' + storageMax + ' banked cash.';
   },
   flourishHint: function(remainingSeconds, storageGoal, floodScore) {
     return 'Flourish ' + remainingSeconds + 's left | ' + storageGoal + ' | keep score under ' + floodScore + '.';
@@ -501,10 +501,10 @@ const game = {
 };
 
 const SCORE_MILESTONES = [
-  { score: 10, message: 'Milestone: 10 drops collected. First households are getting safer water.' },
-  { score: 25, message: 'Milestone: 25 drops. Dam planning unlock is active.' },
-  { score: 50, message: 'Milestone: 50 drops. Community water access is expanding.' },
-  { score: 80, message: 'Milestone: 80 drops. Village resilience is improving.' }
+  { score: 10, message: 'Milestone: 10 drops collected. The Club starts filling up.' },
+  { score: 25, message: 'Milestone: 25 drops. Investment unlock is active.' },
+  { score: 50, message: 'Milestone: 50 drops. Community support is expanding.' },
+  { score: 80, message: 'Milestone: 80 drops. RSN impact is thriving.' }
 ];
 
 // Load custom asset images
@@ -763,7 +763,7 @@ function resetGame() {
   startBtn.disabled = false;
   buildDamBtn.disabled = true;
   storeWaterBtn.disabled = true;
-  buildDamBtn.textContent = 'Build Dam (locked)';
+  buildDamBtn.textContent = 'Invest (locked)';
   playAgainBtn.classList.add('hidden');
   clearImpactFeed();
   addImpactEvent(COPY.missionReady);
@@ -789,30 +789,30 @@ function updateHud() {
 
   const perTin = game.waterStorageMax / tinEls.length;
   game.tinsFilled = Math.min(tinEls.length, Math.floor(game.storedWater / perTin));
-  storedWaterEl.textContent = 'Stored: ' + game.storedWater + '/' + game.waterStorageMax;
+  storedWaterEl.textContent = 'Banked: ' + game.storedWater + '/' + game.waterStorageMax;
 
   for (let i = 0; i < tinEls.length; i++) {
     const fillRatio = Math.max(0, Math.min(1, (game.storedWater - i * perTin) / perTin));
     const fillPercent = Math.round(fillRatio * 100);
-    tinEls[i].style.background = 'linear-gradient(to top, #2f9bff 0 ' + fillPercent + '%, #d7dfe7 ' + fillPercent + '% 100%)';
+    tinEls[i].style.background = 'linear-gradient(to top, #00d9ff 0 ' + fillPercent + '%, #170f24 ' + fillPercent + '% 100%)';
   }
 
   if (game.damBuilt) {
-    buildDamBtn.textContent = 'Dam Built ✓';
+    buildDamBtn.textContent = 'Investment Active ✓';
     buildDamBtn.disabled = true;
     return;
   }
 
   if (game.score >= game.damPromptScore) {
     if (game.storedWater >= game.damPromptScore && game.state === 'playing') {
-      buildDamBtn.textContent = 'Build Dam (D)';
+      buildDamBtn.textContent = 'Invest (D)';
       buildDamBtn.disabled = false;
     } else {
-      buildDamBtn.textContent = 'Store ' + game.damPromptScore + ' water first';
+      buildDamBtn.textContent = 'Bank ' + game.damPromptScore + ' cash first';
       buildDamBtn.disabled = true;
     }
   } else {
-    buildDamBtn.textContent = 'Build Dam (locked)';
+    buildDamBtn.textContent = 'Invest (locked)';
     buildDamBtn.disabled = true;
   }
 }
@@ -824,7 +824,7 @@ function updateTimerHud(nowMs) {
   }
 
   if (game.state === 'playing' && !game.damBuilt) {
-    timerEl.textContent = 'Flourishing: Build Dam';
+    timerEl.textContent = 'Flourishing: Invest';
     return;
   }
 
@@ -852,7 +852,7 @@ function maybeShowDamSuggestion() {
 
   if (game.score >= game.damPromptScore && game.score < game.clearPromptScore && !game.damPromptShown) {
     game.damPromptShown = true;
-    setStatus('Build a dam now: route water to the dry village.');
+    setStatus('Invest now: push cash flow into The Club.');
     setSuggestion(COPY.buildGoalHint(game.floodScore, game.waterStorageMax));
   }
 
@@ -862,7 +862,7 @@ function maybeShowDamSuggestion() {
 }
 
 function checkFloodLoss() {
-  // Loss rule: if score goes above floodScore while playing, the village floods.
+  // Loss rule: if score goes above floodScore while playing, the run crashes.
   if (game.state !== 'playing') {
     return;
   }
@@ -872,22 +872,22 @@ function checkFloodLoss() {
   }
 
   if (!game.damBuilt) {
-    loseGame('You lost: no dam was built before score ' + game.floodScore + '.');
+    loseGame('You lost: no investment was made before score ' + game.floodScore + '.');
   } else {
-    loseGame('You lost: water rose above ' + game.floodScore + '.');
+    loseGame('You lost: pressure spiked above ' + game.floodScore + '.');
   }
 }
 
 function loseGame(reason) {
-  // Loss screen state: show flood messaging and Play Again button.
+  // Loss screen state: show crash messaging and Play Again button.
   game.state = 'lost';
   buildDamBtn.disabled = true;
   storeWaterBtn.disabled = true;
-  buildDamBtn.textContent = 'Flooded';
+  buildDamBtn.textContent = 'Crashed';
   setStatus(reason);
   playSfx('lose');
-  addImpactEvent('Village flooded. Try a safer water strategy.');
-  setSuggestion('Deep-blue flood took over. Press Play Again.');
+  addImpactEvent('Market crash. Try a safer cash strategy.');
+  setSuggestion('Neon crash took over. Press Play Again.');
   startBtn.disabled = true;
   playAgainBtn.classList.remove('hidden');
 }
@@ -897,10 +897,10 @@ function winGame() {
   game.state = 'won';
   buildDamBtn.disabled = true;
   storeWaterBtn.disabled = true;
-  buildDamBtn.textContent = 'Village Flourishing ✓';
-  setStatus('Congratulations! Village flourished for ' + game.flourishWinSeconds + ' seconds under ' + game.floodScore + ' with full storage.');
+  buildDamBtn.textContent = 'Club Flourishing ✓';
+  setStatus('Congratulations! The Club flourished for ' + game.flourishWinSeconds + ' seconds under ' + game.floodScore + ' with full banked cash.');
   playSfx('win');
-  addImpactEvent('Village flourished. Clean water access stabilized.');
+  addImpactEvent('The Club flourished. Community support stabilized.');
   setSuggestion('You win! Press Play Again.');
   startBtn.disabled = true;
   playAgainBtn.classList.remove('hidden');
@@ -982,7 +982,7 @@ function updateFlourishWin(nowMs) {
   const remainingSeconds = Math.max(0, Math.ceil(game.flourishWinSeconds - elapsedSeconds));
 
   if (game.score < game.floodScore) {
-    const storageGoal = game.reachedMaxStorage ? 'storage goal met' : ('store ' + (game.waterStorageMax - game.storedWater) + ' more water');
+    const storageGoal = game.reachedMaxStorage ? 'bank goal met' : ('bank ' + (game.waterStorageMax - game.storedWater) + ' more cash');
     setSuggestion(COPY.flourishHint(remainingSeconds, storageGoal, game.floodScore));
   }
 
@@ -993,11 +993,11 @@ function updateFlourishWin(nowMs) {
     }
 
     if (game.score >= game.floodScore) {
-      loseGame('You lost: water rose above ' + game.floodScore + '.');
+      loseGame('You lost: pressure spiked above ' + game.floodScore + '.');
       return;
     }
 
-    loseGame('You lost: flourish timer reached 0s before full storage was reached.');
+    loseGame('You lost: flourish timer reached 0s before full bank was reached.');
   }
 }
 
@@ -1007,12 +1007,12 @@ function buildDam() {
     return;
   }
   if (game.score < game.damPromptScore) {
-    setStatus('Dam unlocks at score ' + game.damPromptScore + '.');
+    setStatus('Investment unlocks at score ' + game.damPromptScore + '.');
     return;
   }
 
   if (game.storedWater < game.damPromptScore) {
-    setStatus('Store at least ' + game.damPromptScore + ' water in tins first.');
+    setStatus('Bank at least ' + game.damPromptScore + ' cash first.');
     return;
   }
 
@@ -1023,9 +1023,9 @@ function buildDam() {
   game.river.direction = -1;
   updateHud();
   playSfx('build');
-  addImpactEvent('Dam built. Water now reaches the village.');
-  setStatus('Dam built! Town now uses ' + game.drainAmountPerTick + ' stored water per second.');
-  setSuggestion('Keep village flourishing for ' + game.flourishWinSeconds + ' seconds, stay under ' + game.floodScore + ', and reach ' + game.waterStorageMax + ' stored water.');
+  addImpactEvent('Investment made. Cash now routes to The Club.');
+  setStatus('Investment active! The Club now uses ' + game.drainAmountPerTick + ' banked cash per second.');
+  setSuggestion('Keep The Club flourishing for ' + game.flourishWinSeconds + ' seconds, stay under ' + game.floodScore + ', and reach ' + game.waterStorageMax + ' banked cash.');
 }
 
 function storeWater() {
@@ -1034,13 +1034,13 @@ function storeWater() {
   }
 
   if (game.storedWater >= game.waterStorageMax) {
-    setStatus('Storage is already full. Build the dam and protect the village.');
-    addImpactEvent('Storage already full. Keep the village stable.');
+    setStatus('Bank is already full. Invest and protect The Club.');
+    addImpactEvent('Bank already full. Keep The Club stable.');
     return;
   }
 
   if (game.score <= 0) {
-    setStatus('No score to store yet. Collect rain first.');
+    setStatus('No score to bank yet. Collect cash first.');
     return;
   }
 
@@ -1054,8 +1054,8 @@ function storeWater() {
   }
 
   updateHud();
-  addImpactEvent('Stored ' + pointsToStore + ' water for the village.');
-  setStatus('Stored ' + pointsToStore + ' water from score.');
+  addImpactEvent('Banked ' + pointsToStore + ' cash for The Club.');
+  setStatus('Banked ' + pointsToStore + ' cash from score.');
 }
 
 function spawnDrop() {
@@ -1144,7 +1144,7 @@ function collectDrop(index) {
   game.river.maxSegments = Math.min(190, game.river.maxSegments + 1);
   checkScoreMilestones();
   if (game.score % 8 === 0) {
-    addImpactEvent('Collected rain drops: ' + game.score + '.');
+    addImpactEvent('Collected cash drops: ' + game.score + '.');
   }
   updateHud();
   maybeShowDamSuggestion();
@@ -1229,7 +1229,7 @@ function drawVillage() {
     context.moveTo(112, 82);
     context.quadraticCurveTo(160, 168, game.river.x, game.river.y - 6);
     context.lineWidth = 6;
-    context.strokeStyle = '#51b9ff';
+    context.strokeStyle = '#00d9ff';
     context.stroke();
     context.lineWidth = 1;
   }
@@ -1238,10 +1238,16 @@ function drawVillage() {
 function drawDrops() {
   for (let i = 0; i < game.drops.length; i++) {
     const drop = game.drops[i];
-    context.fillStyle = '#35c7ff';
-    context.beginPath();
-    context.ellipse(drop.x, drop.y, drop.size * 0.42, drop.size * 0.66, 0, 0, Math.PI * 2);
-    context.fill();
+    const glyphSize = Math.max(10, drop.size * 1.8);
+    context.save();
+    context.font = '700 ' + glyphSize + 'px Montserrat, sans-serif';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.shadowColor = '#39ff14';
+    context.shadowBlur = 10;
+    context.fillStyle = '#7dff59';
+    context.fillText('$', drop.x, drop.y);
+    context.restore();
   }
 }
 
@@ -1252,7 +1258,7 @@ function drawRiver() {
     for (let i = 1; i < game.river.segments.length; i++) {
       context.lineTo(game.river.segments[i].x, game.river.segments[i].y);
     }
-    context.strokeStyle = '#2f9bff';
+    context.strokeStyle = '#00d9ff';
     context.lineWidth = 8;
     context.lineCap = 'round';
     context.stroke();
@@ -1261,7 +1267,7 @@ function drawRiver() {
 
   for (let i = 0; i < game.river.segments.length; i += 4) {
     const seg = game.river.segments[i];
-    context.fillStyle = i === 0 ? '#9be0ff' : '#2f9bff';
+    context.fillStyle = i === 0 ? '#ff4b8f' : '#00d9ff';
     context.beginPath();
     context.arc(seg.x, seg.y, i === 0 ? 6 : 4, 0, Math.PI * 2);
     context.fill();
@@ -1269,10 +1275,10 @@ function drawRiver() {
 }
 
 function drawBoard() {
-  context.fillStyle = '#0a4a7a';
+  context.fillStyle = '#030914';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  context.fillStyle = 'rgba(255,255,255,0.04)';
+  context.fillStyle = 'rgba(0,217,255,0.08)';
   for (let storm = 0; storm < 20; storm++) {
     const px = (storm * 24 + game.frame * 2) % (canvas.width + 24);
     context.fillRect(px, 0, 2, 18);
@@ -1291,7 +1297,7 @@ function drawBoard() {
   drawRiver();
 
   if (!game.damBuilt && game.score >= game.damPromptScore) {
-    context.fillStyle = '#9e7a52';
+    context.fillStyle = '#ff006e';
     for (let block = 0; block < 4; block++) {
       context.fillRect(122 + block * 13, 82, 10, 8);
     }
@@ -1299,18 +1305,18 @@ function drawBoard() {
 }
 
 function drawOverlay(text) {
-  context.fillStyle = 'rgba(13, 72, 118, 0.52)';
+  context.fillStyle = 'rgba(3, 6, 14, 0.68)';
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = '#ffffff';
   context.font = 'bold 22px Arial';
   context.textAlign = 'center';
   context.fillText(text, canvas.width / 2, canvas.height / 2 - 8);
   context.font = '14px Arial';
-  context.fillText('Dry village is in the top-left. Click Start to Begin.', canvas.width / 2, canvas.height / 2 + 20);
+  context.fillText('The Club zone is in the top-left. Click Start to Begin.', canvas.width / 2, canvas.height / 2 + 20);
 }
 
 function drawFloodLossOverlay() {
-  context.fillStyle = 'rgba(7, 76, 140, 0.95)';
+  context.fillStyle = 'rgba(10, 3, 18, 0.95)';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
   // Draw flood loss image if loaded
@@ -1319,11 +1325,11 @@ function drawFloodLossOverlay() {
     context.drawImage(gameImages.floodLoss, 0, 0, canvas.width, canvas.height);
     context.globalAlpha = 1;
   } else {
-    // Fallback bubble animation if image not loaded
-    context.fillStyle = 'rgba(27, 118, 196, 0.45)';
+    // Fallback neon pulse animation if image not loaded
+    context.fillStyle = 'rgba(255, 0, 110, 0.25)';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    context.strokeStyle = 'rgba(200, 238, 255, 0.9)';
+    context.strokeStyle = 'rgba(0, 217, 255, 0.85)';
     for (let i = 0; i < 20; i++) {
       const bubbleX = (i * 31 + game.frame * 1.5) % (canvas.width + 20);
       const bubbleY = canvas.height - ((game.frame * 1.1 + i * 29) % 260);
@@ -1337,10 +1343,10 @@ function drawFloodLossOverlay() {
   context.fillStyle = '#ffffff';
   context.textAlign = 'center';
   context.font = 'bold 22px Arial';
-  context.fillText('Flooded Village - You Lost', canvas.width / 2, canvas.height / 2 - 10);
+  context.fillText('Club Crash - You Lost', canvas.width / 2, canvas.height / 2 - 10);
   context.font = '14px Arial';
-  context.fillText('Flood warning crossed over ' + game.floodScore + ' points.', canvas.width / 2, canvas.height / 2 + 16);
-  context.fillText('The town is underwater. Press Play Again.', canvas.width / 2, canvas.height / 2 + 36);
+  context.fillText('Risk crossed over ' + game.floodScore + ' points.', canvas.width / 2, canvas.height / 2 + 16);
+  context.fillText('The Club crashed. Press Play Again.', canvas.width / 2, canvas.height / 2 + 36);
 }
 
 function drawWinOverlay() {
@@ -1351,9 +1357,9 @@ function drawWinOverlay() {
   context.font = 'bold 24px Arial';
   context.fillText('Congratulations!', canvas.width / 2, canvas.height / 2 - 16);
   context.font = 'bold 18px Arial';
-  context.fillText('Village Flourishing Achieved', canvas.width / 2, canvas.height / 2 + 10);
+  context.fillText('Club Flourishing Achieved', canvas.width / 2, canvas.height / 2 + 10);
   context.font = '14px Arial';
-  context.fillText('You protected the town for ' + game.flourishWinSeconds + ' seconds with full water storage.', canvas.width / 2, canvas.height / 2 + 34);
+  context.fillText('You protected The Club for ' + game.flourishWinSeconds + ' seconds with full cash reserves.', canvas.width / 2, canvas.height / 2 + 34);
 }
 
 function loop() {
