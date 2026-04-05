@@ -546,7 +546,7 @@ function updateStoredWaterDrain(nowMs) {
 function updateFlourishWin(nowMs) {
   // Win rule check:
   // 1) Dam is built,
-  // 2) Flourish timer reaches 30 seconds,
+  // 2) Flourish timer reaches the current difficulty target (flourishWinSeconds),
   // 3) Score stays under floodScore,
   // 4) Player reached max storage at least once.
   if (game.state !== 'playing' || !game.damBuilt) {
@@ -914,17 +914,17 @@ function drawFloodLossOverlay() {
     context.stroke();
   }
 
-  context.fillStyle = '#ffffff';
+  context.fillStyle = '#ec2f2fdd';
   context.textAlign = 'center';
   context.font = 'bold 22px Arial';
   context.fillText('Club Crash - You Lost', canvas.width / 2, canvas.height / 2 - 10);
   context.font = '14px Arial';
   context.fillText('Risk crossed over ' + game.floodScore + ' points.', canvas.width / 2, canvas.height / 2 + 16);
-  context.fillText('The Club crashed. Press Play Again.', canvas.width / 2, canvas.height / 2 + 36);
+  context.fillText('You Got Too Risky. Press Play Again.', canvas.width / 2, canvas.height / 2 + 36);
 }
 
 function drawWinOverlay() {
-  context.fillStyle = 'rgba(15, 110, 81, 0.68)';
+  context.fillStyle = 'rgba(66, 235, 184, 0.93)';
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = '#ffffff';
   context.textAlign = 'center';
