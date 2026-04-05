@@ -247,6 +247,13 @@
     color: #a8c4dd;
   }
 
+  #boardWrap {
+    position: relative;
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
   canvas {
     border: 1px solid #00d9ff;
     display: block;
@@ -255,6 +262,32 @@
     align-self: center;
     background: #040b18;
     box-shadow: inset 0 0 18px rgba(0, 217, 255, 0.2), 0 0 14px rgba(0, 217, 255, 0.35);
+  }
+
+  .gif-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 440px;
+    height: 440px;
+    display: none;
+    border: 1px solid #00d9ff;
+    border-radius: 0;
+  }
+
+  .gif-overlay.visible {
+    display: block;
+  }
+
+  #investGifOverlay {
+    object-fit: contain;
+    object-position: center;
+  }
+
+  #floodLossGifOverlay {
+    opacity: 0.6;
+    object-fit: cover;
   }
 
   #status {
@@ -400,6 +433,8 @@
   </div>
   <div id="boardWrap">
     <canvas width="440" height="440" id="game"></canvas>
+    <img id="investGifOverlay" class="gif-overlay" src="RSN.img/Sex_Worker_Social.gif" alt="Investment overlay">
+    <img id="floodLossGifOverlay" class="gif-overlay" src="RSN.img/WWAD.gif" alt="Flood loss overlay">
     <button id="startBtn" type="button" aria-label="Start game">
       <img src="RSN.img/Cash.gif" alt="Start Rouge Support Network Runner">
     </button>
@@ -482,6 +517,7 @@ const game = {
   storedWater: 0,
   tinsFilled: 0,
   damBuilt: false,
+  damBuiltTimeMs: 0,
   reachedMaxStorage: false,
   damPromptShown: false,
   lastPenaltyTickMs: 0,
@@ -509,9 +545,7 @@ const SCORE_MILESTONES = [
 
 // Load custom asset images
 const gameImages = {
-  village: null,
-  floodLossGif: null,
-  damBuiltGif: null
+  village: null
 };
 
 function loadGameImages() {
@@ -523,26 +557,6 @@ function loadGameImages() {
   };
   villageImg.onerror = function() {
     console.warn('Failed to load village image');
-  };
-
-  // Load WWAD.gif - browser will animate it natively when drawn to canvas
-  const floodImg = new Image();
-  floodImg.src = 'RSN.img/WWAD.gif';
-  floodImg.onload = function() {
-    gameImages.floodLossGif = floodImg;
-  };
-  floodImg.onerror = function() {
-    console.warn('Failed to load flood loss GIF');
-  };
-
-  // Load Sex_Worker_Social.gif - browser will animate it natively when drawn to canvas
-  const damImg = new Image();
-  damImg.src = 'RSN.img/Sex_Worker_Social.gif';
-  damImg.onload = function() {
-    gameImages.damBuiltGif = damImg;
-  };
-  damImg.onerror = function() {
-    console.warn('Failed to load dam built GIF');
   };
 }
 
@@ -761,6 +775,7 @@ function resetGame() {
   game.frame = 0;
   game.drops = [];
   game.damBuilt = false;
+  game.damBuiltTimeMs = 0;
   game.reachedMaxStorage = false;
   game.damPromptShown = false;
   game.lastPenaltyTickMs = 0;
@@ -771,6 +786,11 @@ function resetGame() {
   game.keys.right = false;
   game.keys.up = false;
   game.keys.down = false;
+  // Hide any visible GIF overlays
+  const investGif = document.getElementById('investGifOverlay');
+  const floodGif = document.getElementById('floodLossGifOverlay');
+  if (investGif) investGif.classList.remove('visible');
+  if (floodGif) floodGif.classList.remove('visible');
   startBtn.classList.remove('hidden');
   startBtn.disabled = false;
   investButton.disabled = true;
@@ -1030,6 +1050,7 @@ function buildDam() {
   }
 
   game.damBuilt = true;
+  game.damBuiltTimeMs = performance.now();  // Track time for investment animation
   game.flourishStartMs = performance.now();
   game.lastPenaltyTickMs = game.flourishStartMs;
   game.rainIntensity = game.postDamRainIntensity;
@@ -1291,11 +1312,17 @@ function drawBoard() {
 
   drawVillage();
   
-  // Draw animated dam status GIF when dam is built
-  if (game.damBuilt && gameImages.damBuiltGif) {
-    context.globalAlpha = 0.7;
-    context.drawImage(gameImages.damBuiltGif, 200, 100, 220, 220);
-    context.globalAlpha = 1;
+  // Show investment GIF overlay for 2 seconds after dam is built, then hide it
+  const investGifOverlay = document.getElementById('investGifOverlay');
+  if (game.damBuilt && investGifOverlay) {
+    const timeSinceDamBuilt = performance.now() - game.damBuiltTimeMs;
+    if (timeSinceDamBuilt < 2000) {  // Show for 2 seconds
+      investGifOverlay.classList.add('visible');
+    } else {
+      investGifOverlay.classList.remove('visible');
+    }
+  } else if (investGifOverlay) {
+    investGifOverlay.classList.remove('visible');
   }
   
   drawDrops();
@@ -1324,25 +1351,21 @@ function drawFloodLossOverlay() {
   context.fillStyle = 'rgba(10, 3, 18, 0.95)';
   context.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw animated flood loss GIF if available
-  if (gameImages.floodLossGif) {
-    context.globalAlpha = 0.6;
-    context.drawImage(gameImages.floodLossGif, 0, 0, canvas.width, canvas.height);
-    context.globalAlpha = 1;
-  } else {
-    // Fallback neon pulse animation if image not loaded
-    context.fillStyle = 'rgba(255, 0, 110, 0.25)';
-    context.fillRect(0, 0, canvas.width, canvas.height);
+  // Show/hide flood loss GIF overlay
+  const floodLossGifOverlay = document.getElementById('floodLossGifOverlay');
+  if (floodLossGifOverlay) {
+    floodLossGifOverlay.classList.add('visible');
+  }
 
-    context.strokeStyle = 'rgba(0, 217, 255, 0.85)';
-    for (let i = 0; i < 20; i++) {
-      const bubbleX = (i * 31 + game.frame * 1.5) % (canvas.width + 20);
-      const bubbleY = canvas.height - ((game.frame * 1.1 + i * 29) % 260);
-      const radius = 3 + (i % 4);
-      context.beginPath();
-      context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
-      context.stroke();
-    }
+  // Fallback neon pulse animation (shown behind the GIF if loaded)
+  context.strokeStyle = 'rgba(0, 217, 255, 0.85)';
+  for (let i = 0; i < 20; i++) {
+    const bubbleX = (i * 31 + game.frame * 1.5) % (canvas.width + 20);
+    const bubbleY = canvas.height - ((game.frame * 1.1 + i * 29) % 260);
+    const radius = 3 + (i % 4);
+    context.beginPath();
+    context.arc(bubbleX, bubbleY, radius, 0, Math.PI * 2);
+    context.stroke();
   }
 
   context.fillStyle = '#ffffff';
